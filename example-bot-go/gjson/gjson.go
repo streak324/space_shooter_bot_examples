@@ -9,7 +9,7 @@ import (
 	"unicode/utf8"
 	"unsafe"
 
-	"github.com/tidwall/match"
+	"bot-go/gjson/match"
 )
 
 // Type is Result type
