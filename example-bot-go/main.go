@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bot-go/gjson"
 	"runtime"
+	"strconv"
 	"unsafe"
 )
 
@@ -55,8 +57,20 @@ func _getJSONGameState(ptr uint32, capacity uint32) int32
 //go:export step
 func step() {
 	log("Hello WASM Host!!!")
+	log(strconv.Itoa(5678))
+	//log(fmt.Sprintf("%d", 1337))
 
 	jsonData := ptrToString(bytesToPtr(getJSONGameState()))
+	entitiesJSON := gjson.Get(jsonData, "entities").Array()
+	for _, entityJSON := range entitiesJSON {
+		my := entityJSON.Get("my").Bool()
+		id := entityJSON.Get("id").Int()
+		if my {
+			log("id: " + strconv.FormatInt(id, 10) + " is mine")
+		} else {
+			log("id: " + strconv.FormatInt(id, 10) + " is not mine")
+		}
+	}
 	log(jsonData)
 
 	//data, err := easyjson.Marshal(serialize.GameState{
