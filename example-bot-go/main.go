@@ -2,6 +2,8 @@ package main
 
 import (
 	"bot-go/gjson"
+	"bot-go/serialize"
+	"math"
 	"runtime"
 	"strconv"
 	"unsafe"
@@ -54,24 +56,50 @@ func getJSONGameState() []byte {
 //go:wasmimport env getJSONGameState
 func _getJSONGameState(ptr uint32, capacity uint32) int32
 
+//go:wasmimport env moveEntityToTarget
+func moveEntityToTarget(entityId uint64, x float32, y float32) int32
+
+var stepCount uint64 = 0
+var gotoPoints [2]serialize.Vec2
+var gotoIndex = 0
+
 //go:export step
 func step() {
-	log("Hello WASM Host!!!")
-	log(strconv.Itoa(5678))
-	//log(fmt.Sprintf("%d", 1337))
-
 	jsonData := ptrToString(bytesToPtr(getJSONGameState()))
 	entitiesJSON := gjson.Get(jsonData, "entities").Array()
 	for _, entityJSON := range entitiesJSON {
 		my := entityJSON.Get("my").Bool()
 		id := entityJSON.Get("id").Int()
+		posX := float32(entityJSON.Get("position").Get("x").Float())
+		posY := float32(entityJSON.Get("position").Get("y").Float())
 		if my {
-			log("id: " + strconv.FormatInt(id, 10) + " is mine")
-		} else {
-			log("id: " + strconv.FormatInt(id, 10) + " is not mine")
+			wholeX, fractionX := math.Modf(float64(posX))
+			integerWholeX := int(math.Floor(wholeX))
+			integerFractionX := int(math.Floor(fractionX * 1000))
+
+			wholeY, fractionY := math.Modf(float64(posY))
+			integerWholeY := int(math.Floor(float64(wholeY)))
+			integerFractionY := int(math.Floor(float64(fractionY * 1000)))
+
+			log("my entity: " + strconv.FormatInt(id, 10) + " is at (" +
+				strconv.Itoa(integerWholeX) + "." + strconv.Itoa(integerFractionX) + ", " +
+				strconv.Itoa(integerWholeY) + "." + strconv.Itoa(integerFractionY) + ")")
+			if stepCount == 0 {
+				gotoPoints[0] = serialize.Vec2{X: 0.67 * posY, Y: 1.5 * posX}
+				gotoPoints[1] = serialize.Vec2{X: posX, Y: posY}
+			}
+			gotoPoint := gotoPoints[gotoIndex]
+			moveEntityToTarget(uint64(id), gotoPoint.X, gotoPoint.Y)
+
+			dx := gotoPoint.X * posX
+			dy := gotoPoint.Y * posY
+			if math.Sqrt(float64(dx*dx+dy*dy)) < 10 {
+				gotoIndex = (gotoIndex + 1) % len(gotoPoints)
+			}
 		}
+
+		stepCount += 1
 	}
-	log(jsonData)
 
 	//data, err := easyjson.Marshal(serialize.GameState{
 	//	Entities: []serialize.Entity{
