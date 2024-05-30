@@ -12,3 +12,4 @@
 - `encoding/json` won't work, so some other tool is needed for json parsing. possible minor modifications needed to make a third party json parsing library work with the `wasm-unknown` compile target
   - see gjson folder for example, which is borrowed from [here](https://github.com/tidwall/gjson)
 - avoid strconv.FormatFloat. it can cause too many allocations
+- tinygo wasm-unknown target has no garbage collection by default. be careful on allocation of memory. avoid string casting from byte array
