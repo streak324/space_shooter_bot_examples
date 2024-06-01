@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bot-go/gjson"
+	"bot-go/gamestate"
 	"bot-go/serialize"
 	"math"
 	"runtime"
@@ -13,7 +13,7 @@ import (
 
 var printBuffer []byte = make([]byte, 2048)
 
-var jsonGameStateBuffer [4096]byte
+var gameStateBuffer []byte = make([]byte, 1)
 
 func log(message string) {
 	ptr, size := stringToPtr(message)
@@ -53,14 +53,24 @@ func ptrToString(ptr uint32, size uint32) string {
 	return unsafe.String((*byte)(unsafe.Pointer(uintptr(ptr))), size)
 }
 
-//go:export getJSONGameState
-func getJSONGameState() []byte {
-	size := _getJSONGameState(bytesToPtr(jsonGameStateBuffer[:cap(jsonGameStateBuffer)]))
-	return jsonGameStateBuffer[:size]
+type BufferTooSmall struct {
+	SizeNeeded int32
 }
 
-//go:wasmimport env getJSONGameState
-func _getJSONGameState(ptr uint32, capacity uint32) int32
+func (b BufferTooSmall) Error() string {
+	return "buffer too small"
+}
+
+func getGameState() (*gamestate.GameState, error) {
+	size := _getGameStateBuffer(bytesToPtr(gameStateBuffer))
+	if size > int32(cap(gameStateBuffer)) {
+		return nil, BufferTooSmall{SizeNeeded: size}
+	}
+	return gamestate.GetRootAsGameState(gameStateBuffer[:size], 0), nil
+}
+
+//go:wasmimport env getGameStateBuffer
+func _getGameStateBuffer(ptr uint32, capacity uint32) int32
 
 //go:wasmimport env moveEntityToTarget
 func moveEntityToTarget(entityId uint64, x float32, y float32) int32
@@ -71,13 +81,24 @@ var gotoIndex = 0
 
 //go:export step
 func step() {
-	jsonData := ptrToString(bytesToPtr(getJSONGameState()))
-	entitiesJSON := gjson.Get(jsonData, "entities").Array()
-	for _, entityJSON := range entitiesJSON {
-		my := entityJSON.Get("my").Bool()
-		id := entityJSON.Get("id").Int()
-		posX := float32(entityJSON.Get("position").Get("x").Float())
-		posY := float32(entityJSON.Get("position").Get("y").Float())
+	gameState, err := getGameState()
+	for err != nil {
+		tooSmallErr := err.(BufferTooSmall)
+		log("error on getting game state. buffer too small")
+		gameStateBuffer = make([]byte, 3*tooSmallErr.SizeNeeded/2)
+		gameState, err = getGameState()
+	}
+
+	for idx := range gameState.EntitiesLength() {
+		var entity gamestate.Entity
+		gameState.Entities(&entity, idx)
+		my := entity.My()
+		id := entity.Id()
+		var position gamestate.Vec2
+		entity.Position(&position)
+		posX := float32(position.X())
+		posY := float32(position.Y())
+
 		if my {
 			wholeX, fractionX := math.Modf(float64(posX))
 			integerWholeX := int(math.Floor(wholeX))
@@ -89,8 +110,8 @@ func step() {
 
 			printBuffer = printBuffer[:0]
 			printBuffer = append(printBuffer, []byte("my entity ")...)
-			printBuffer = strconv.AppendInt(printBuffer, id, 10)
-			printBuffer = append(printBuffer, []byte("is at (")...)
+			printBuffer = strconv.AppendInt(printBuffer, int64(id), 10)
+			printBuffer = append(printBuffer, []byte(" is at (")...)
 			printBuffer = strconv.AppendInt(printBuffer, int64(integerWholeX), 10)
 			printBuffer = append(printBuffer, '.')
 			printBuffer = strconv.AppendInt(printBuffer, int64(integerFractionX), 10)
