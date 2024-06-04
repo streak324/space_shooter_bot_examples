@@ -2,12 +2,16 @@ package main
 
 import (
 	"bot-go/gamestate"
-	"bot-go/serialize"
 	"math"
 	"runtime"
 	"strconv"
 	"unsafe"
 )
+
+type Vec2 struct {
+	X float32
+	Y float32
+}
 
 // some code taken from https://github.com/tetratelabs/wazero/blob/1e0f88bc1462ca07a33df83004914d3af7f5bcb4/examples/allocation/tinygo/testdata/greet.go
 
@@ -26,12 +30,6 @@ func logb(message []byte) {
 	_log(ptr, size)
 	runtime.KeepAlive(message) // keep message alive until ptr is no longer needed.
 }
-
-// _log is a WebAssembly import which prints a string (linear memory offset,
-// byteCount) to the console.
-//
-//go:wasmimport env log
-func _log(ptr, size uint32)
 
 // stringToPtr returns a pointer and size pair for the given string in a way
 // compatible with WebAssembly numeric types.
@@ -62,25 +60,34 @@ func (b BufferTooSmall) Error() string {
 }
 
 func getGameState() (*gamestate.GameState, error) {
-	size := _getGameStateBuffer(bytesToPtr(gameStateBuffer))
+	size := _getGameState(bytesToPtr(gameStateBuffer))
 	if size > int32(cap(gameStateBuffer)) {
 		return nil, BufferTooSmall{SizeNeeded: size}
 	}
 	return gamestate.GetRootAsGameState(gameStateBuffer[:size], 0), nil
 }
 
-//go:wasmimport env getGameStateBuffer
-func _getGameStateBuffer(ptr uint32, capacity uint32) int32
+func appendFloat32(dst []byte, data float64) []byte {
+	whole, fraction := math.Modf(data)
+	integerWhole := int(math.Floor(whole))
+	integerFraction := int(math.Abs(math.Floor(fraction * 1000)))
 
-//go:wasmimport env moveEntityToTarget
-func moveEntityToTarget(entityId uint64, x float32, y float32) int32
+	dst = strconv.AppendInt(dst, int64(integerWhole), 10)
+	dst = append(dst, '.')
+	dst = strconv.AppendInt(dst, int64(integerFraction), 10)
+	return dst
+}
 
 var stepCount uint64 = 0
-var gotoPoints [2]serialize.Vec2
-var gotoIndex = 0
+var gotoPoints [2]Vec2
+var gotoIndex = 1
 
 //go:export step
 func step() {
+	defer func() {
+		stepCount += 1
+	}()
+
 	gameState, err := getGameState()
 	for err != nil {
 		tooSmallErr := err.(BufferTooSmall)
@@ -100,50 +107,28 @@ func step() {
 		posY := float32(position.Y())
 
 		if my {
-			wholeX, fractionX := math.Modf(float64(posX))
-			integerWholeX := int(math.Floor(wholeX))
-			integerFractionX := int(math.Abs(math.Floor(fractionX * 1000)))
-
-			wholeY, fractionY := math.Modf(float64(posY))
-			integerWholeY := int(math.Floor(float64(wholeY)))
-			integerFractionY := int(math.Abs(math.Floor(float64(fractionY * 1000))))
-
-			printBuffer = printBuffer[:0]
-			printBuffer = append(printBuffer, []byte("my entity ")...)
-			printBuffer = strconv.AppendInt(printBuffer, int64(id), 10)
-			printBuffer = append(printBuffer, []byte(" is at (")...)
-			printBuffer = strconv.AppendInt(printBuffer, int64(integerWholeX), 10)
-			printBuffer = append(printBuffer, '.')
-			printBuffer = strconv.AppendInt(printBuffer, int64(integerFractionX), 10)
-			printBuffer = append(printBuffer, []byte(", ")...)
-			printBuffer = strconv.AppendInt(printBuffer, int64(integerWholeY), 10)
-			printBuffer = append(printBuffer, '.')
-			printBuffer = strconv.AppendInt(printBuffer, int64(integerFractionY), 10)
-			printBuffer = append(printBuffer, ')')
-			logb(printBuffer)
-
 			if stepCount == 0 {
 				log("at first step")
-				gotoPoints[0] = serialize.Vec2{X: 0.67 * posY, Y: 1.5 * posX}
-				gotoPoints[1] = serialize.Vec2{X: posX, Y: posY}
+				gotoPoints[0] = Vec2{X: 1.5 * posY, Y: 0.67 * posX}
+				gotoPoints[1] = Vec2{X: posX, Y: posY}
 			}
 			gotoPoint := gotoPoints[gotoIndex]
 
-			printBuffer = printBuffer[:0]
-			printBuffer = append(printBuffer, []byte("my entity ")...)
-			printBuffer = append(printBuffer, []byte("move ship to target result: ")...)
-			result := moveEntityToTarget(uint64(id), gotoPoint.X, gotoPoint.Y)
-			printBuffer = strconv.AppendInt(printBuffer, int64(result), 10)
-			logb(printBuffer)
-
-			dx := gotoPoint.X * posX
-			dy := gotoPoint.Y * posY
-			if math.Sqrt(float64(dx*dx+dy*dy)) < 10 {
+			dx := gotoPoint.X - posX
+			dy := gotoPoint.Y - posY
+			if stepCount == 0 || math.Sqrt(float64(dx*dx+dy*dy)) < 25 {
 				gotoIndex = (gotoIndex + 1) % len(gotoPoints)
+				printBuffer = printBuffer[:0]
+				gotoPoint = gotoPoints[gotoIndex]
+				printBuffer = append(printBuffer, []byte("moving to point (")...)
+				printBuffer = appendFloat32(printBuffer, float64(gotoPoint.X))
+				printBuffer = append(printBuffer, []byte(", ")...)
+				printBuffer = appendFloat32(printBuffer, float64(gotoPoint.Y))
+				printBuffer = append(printBuffer, ')')
+				logb(printBuffer)
 			}
+			moveEntityToTarget(id, gotoPoint.X, gotoPoint.Y)
 		}
-
-		stepCount += 1
 	}
 }
 
