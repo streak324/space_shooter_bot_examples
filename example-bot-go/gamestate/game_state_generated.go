@@ -77,6 +77,107 @@ func Vec2AddY(builder *flatbuffers.Builder, y float32) {
 func Vec2End(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
+type Block struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsBlock(buf []byte, offset flatbuffers.UOffsetT) *Block {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &Block{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func FinishBlockBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
+func GetSizePrefixedRootAsBlock(buf []byte, offset flatbuffers.UOffsetT) *Block {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Block{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func FinishSizePrefixedBlockBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
+}
+
+func (rcv *Block) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *Block) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *Block) BlockType() uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *Block) MutateBlockType(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(4, n)
+}
+
+func (rcv *Block) FeatureFlags() uint64 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.GetUint64(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *Block) MutateFeatureFlags(n uint64) bool {
+	return rcv._tab.MutateUint64Slot(6, n)
+}
+
+func (rcv *Block) X() float32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
+	}
+	return 0.0
+}
+
+func (rcv *Block) MutateX(n float32) bool {
+	return rcv._tab.MutateFloat32Slot(8, n)
+}
+
+func (rcv *Block) Y() float32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
+	}
+	return 0.0
+}
+
+func (rcv *Block) MutateY(n float32) bool {
+	return rcv._tab.MutateFloat32Slot(10, n)
+}
+
+func BlockStart(builder *flatbuffers.Builder) {
+	builder.StartObject(4)
+}
+func BlockAddBlockType(builder *flatbuffers.Builder, blockType uint32) {
+	builder.PrependUint32Slot(0, blockType, 0)
+}
+func BlockAddFeatureFlags(builder *flatbuffers.Builder, featureFlags uint64) {
+	builder.PrependUint64Slot(1, featureFlags, 0)
+}
+func BlockAddX(builder *flatbuffers.Builder, x float32) {
+	builder.PrependFloat32Slot(2, x, 0.0)
+}
+func BlockAddY(builder *flatbuffers.Builder, y float32) {
+	builder.PrependFloat32Slot(3, y, 0.0)
+}
+func BlockEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
 type Entity struct {
 	_tab flatbuffers.Table
 }
@@ -210,8 +311,28 @@ func (rcv *Entity) MutateAngularVelocity(n float32) bool {
 	return rcv._tab.MutateFloat32Slot(18, n)
 }
 
+func (rcv *Entity) Blocks(obj *Block, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *Entity) BlocksLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
 func EntityStart(builder *flatbuffers.Builder) {
-	builder.StartObject(8)
+	builder.StartObject(9)
 }
 func EntityAddId(builder *flatbuffers.Builder, id uint64) {
 	builder.PrependUint64Slot(0, id, 0)
@@ -236,6 +357,12 @@ func EntityAddRotation(builder *flatbuffers.Builder, rotation float32) {
 }
 func EntityAddAngularVelocity(builder *flatbuffers.Builder, angularVelocity float32) {
 	builder.PrependFloat32Slot(7, angularVelocity, 0.0)
+}
+func EntityAddBlocks(builder *flatbuffers.Builder, blocks flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(blocks), 0)
+}
+func EntityStartBlocksVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
 }
 func EntityEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

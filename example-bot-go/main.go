@@ -81,12 +81,15 @@ func appendFloat32(dst []byte, data float64) []byte {
 var stepCount uint64 = 0
 var gotoPoints [2]Vec2
 var gotoIndex = 1
+var turretRotation float32
 
 //go:export step
 func step() {
 	defer func() {
 		stepCount += 1
 	}()
+
+	turretRotation = float32(stepCount) * math.Pi / 60
 
 	gameState, err := getGameState()
 	for err != nil {
@@ -128,6 +131,15 @@ func step() {
 				logb(printBuffer)
 			}
 			moveEntityToTarget(id, gotoPoint.X, gotoPoint.Y)
+
+			for blockIndex := range entity.BlocksLength() {
+				var block gamestate.Block
+				entity.Blocks(&block, blockIndex)
+				block.FeatureFlags()
+				orientTurret(entity.Id(), uint32(blockIndex), turretRotation)
+				fireCannon(entity.Id(), uint32(blockIndex))
+				launchMissiles(entity.Id(), uint32(blockIndex))
+			}
 		}
 	}
 }

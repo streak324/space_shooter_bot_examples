@@ -27,16 +27,22 @@ func moveEntityToTarget(entityId uint64, x float32, y float32) int32
 
 // command entity with id `entityId` to rotate its block at index `blockIndex` at `rotation` radians.
 //
+// rotation is relative to ship, not relative to world.
+//
 // returns non-zero on parameter validation error
 //
 //go:wasmimport env orientTurret
 func orientTurret(entityId uint64, blockIndex uint32, rotation float32) int32
 
+// command entity with id `entityId` to fire cannon on block index `blockIndex`
+//
 // returns non-zero on parameter validation error
 //
 //go:wasmimport env fireCannon
 func fireCannon(entityId uint64, blockIndex uint32) int32
 
+// command entity with id `entityId` to launch missiles on block index `blockIndex`
+//
 // returns non-zero on parameter validation error
 //
 //go:wasmimport env launchMissiles
