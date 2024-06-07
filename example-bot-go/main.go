@@ -83,6 +83,10 @@ var gotoPoints [2]Vec2
 var gotoIndex = 1
 var turretRotation float32
 
+var shipId uint64
+var enemyId uint64
+var enemyPosition Vec2
+
 //go:export step
 func step() {
 	defer func() {
@@ -114,6 +118,7 @@ func step() {
 				log("at first step")
 				gotoPoints[0] = Vec2{X: 1.5 * posY, Y: 0.67 * posX}
 				gotoPoints[1] = Vec2{X: posX, Y: posY}
+				shipId = id
 			}
 			gotoPoint := gotoPoints[gotoIndex]
 
@@ -130,7 +135,17 @@ func step() {
 				printBuffer = append(printBuffer, ')')
 				logb(printBuffer)
 			}
-			moveEntityToTarget(id, gotoPoint.X, gotoPoint.Y)
+			if shipId == id {
+				moveEntityToTarget(id, gotoPoint.X, gotoPoint.Y)
+			} else if entity.IsCommandable() {
+				result := moveEntityToTarget(id, enemyPosition.X, enemyPosition.Y)
+				if result != 0 {
+					printBuffer = printBuffer[:0]
+					printBuffer = append(printBuffer, []byte("move result ")...)
+					printBuffer = strconv.AppendInt(printBuffer, int64(result), 10)
+					logb(printBuffer)
+				}
+			}
 
 			for blockIndex := range entity.BlocksLength() {
 				var block gamestate.Block
@@ -139,6 +154,13 @@ func step() {
 				orientTurret(entity.Id(), uint32(blockIndex), turretRotation)
 				fireCannon(entity.Id(), uint32(blockIndex))
 				launchMissiles(entity.Id(), uint32(blockIndex))
+			}
+		} else {
+			if stepCount == 0 {
+				enemyId = id
+			}
+			if enemyId == id {
+				enemyPosition = Vec2{X: posX, Y: posY}
 			}
 		}
 	}
