@@ -9,5 +9,6 @@
 
 *.wasm
 *.wat
+*.objdump
 
 build-custom.sh
