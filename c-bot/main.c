@@ -1,10 +1,12 @@
-// add.c
 #include <stdint.h>
+#include <emscripten.h>
 
 typedef int32_t i32;
 typedef int8_t i8;
 
-extern void botsLog(void* buffer_ptr, i32 length);
+
+//any imported wasm host functions need the function declared with EM_IMPORT(func_name) appended to it. no need to define function since it is provided by the wasm host
+void botsLog(void* buffer_ptr, i32 length) EM_IMPORT(botsLog);
 
 typedef struct {
 	i8* ptr;
@@ -24,7 +26,7 @@ static Buffer print_buffer = {
 static void write_string_to_buffer(Buffer* buffer, const i8* string_ptr, const i32 string_length)
 {
 	i32 i = 0;
-	for (i = 0; i < string_length; i++) {
+	for (i = 0; string_length == 0 || i < string_length; i++) {
 		if (buffer->offset >= buffer->capacity) {
 			return;
 		}
@@ -43,7 +45,8 @@ static void reset_buffer(Buffer* buffer) {
 }
 
 static i32 step_count = 0;
-void step()
+
+EMSCRIPTEN_KEEPALIVE void step()
 {
 	step_count += 1;
 	reset_buffer(&print_buffer);
