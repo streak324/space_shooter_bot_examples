@@ -13,15 +13,15 @@ typedef struct {
 } Buffer;
 
 #define PRINT_BUFFER_CAPACITY 4096
-i8 _print_buffer[PRINT_BUFFER_CAPACITY];
-Buffer print_buffer = {
+static i8 _print_buffer[PRINT_BUFFER_CAPACITY];
+static Buffer print_buffer = {
 	_print_buffer,
 	0,
 	PRINT_BUFFER_CAPACITY
 };
 
 // string must be either null terminated or passed in a string length
-void write_string_to_buffer(Buffer* buffer, const i8* string_ptr, const i32 string_length)
+static void write_string_to_buffer(Buffer* buffer, const i8* string_ptr, const i32 string_length)
 {
 	i32 i = 0;
 	for (i = 0; i < string_length; i++) {
@@ -38,11 +38,11 @@ void write_string_to_buffer(Buffer* buffer, const i8* string_ptr, const i32 stri
 	}
 }
 
-void reset_buffer(Buffer* buffer) {
+static void reset_buffer(Buffer* buffer) {
 	buffer->offset = 0;
 }
 
-i32 step_count = 0;
+static i32 step_count = 0;
 void step()
 {
 	step_count += 1;
