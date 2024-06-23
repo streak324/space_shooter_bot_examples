@@ -6,6 +6,6 @@
 - `sudo apt install gcc-multilib`
 
 ## NOTES
-- Make sure all your global variables and non-exported funcs are `static`. Otherwise they get included as wasm imports which will not be supported by the wasm host
+- you may need all your global variables and non-exported funcs to be `static`. Otherwise they may get included as wasm imports which will not be supported by the wasm host
 - Avoid using any libraries that requires access to operating system or accesses any syscalls or filesystem.
 

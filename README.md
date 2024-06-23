@@ -18,20 +18,22 @@ Below is a list of functions provided by the WASM Game Host that your bot can im
   - entityId -> the id of the entity you want to move
   - x -> a 32 bit floating point in the x dimension you want the entity to be in
   - y -> a 32 bit floating point in the y dimension you want the entity to be in
-  - returns 0 on success. non-zero on validation error
+  - returns non-zero on validation error
 - orientTurret(entityId u64, blockIndex i32, rotation f32) -> i32
   - entityId -> the id of the entity you want to command
   - blockIndex -> the block index of the entity containing the turret you want to orient
   - rotation -> where you want the turret to be rotated to. NOTE: rotation is relative to the entity, not to the world.
-  - returns 0 on success. non-zero on validation error
+  - returns non-zero on validation error
 - botsFireCannon(entityId u64, blockIndex i32) -> i32 
   - entityId -> the id of the entity you want to command
   - blockIndex -> the block index of the entity containing the cannon you want to fire
-  - returns 0 on success. non-zero on validation error
+  - returns non-zero on validation error
 - botsLaunchMissiles(entityId u64, blockIndex i32) -> i32 
   - entityId -> the id of the entity you want to command
   - blockIndex -> the block index of the entity containing the missle launcher you want to fire. NOTE: it will fire all filled slots in the missile launcher
-  - returns 0 on success. non-zero on validation error
+  - returns non-zero on validation error
+- botsAimTurret(entityId u64, bockIndex i32, x f32, y f32) -> i32
+  - returns non-zero on validation error
 
 ## Notes
 - Adjust your wasm toolchains to avoid generating imports for "GOT.mem", "GOT.func", "__stack_pointer", "__memory_base", "__table_base ". Those are not well supported in the wasm host. Use the toolchain configuration in the examples
