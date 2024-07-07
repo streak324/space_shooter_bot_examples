@@ -12,8 +12,6 @@ Below is a list of functions provided by the WASM Game Host that your bot can im
   - ptr -> pointer address to a buffer where the flatbuffer encoded game state will be written to
   - capacity -> how many bytes the buffer can be written to
   - returns number of bytes written. assume error if buffer capacity is smaller
-- botsGetMyOwnerId() -> i32
-  - returns the owner id of your controllable entities. may be useful for identifying friend and foe.
 - moveEntityToTarget(entityId u64, x f32, y f32) -> i32
   - entityId -> the id of the entity you want to move
   - x -> a 32 bit floating point in the x dimension you want the entity to be in
