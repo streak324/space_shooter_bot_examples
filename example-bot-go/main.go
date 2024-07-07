@@ -3,9 +3,10 @@ package main
 import (
 	"bot-go/gamestate"
 	"math"
-	"runtime"
 	"strconv"
 	"unsafe"
+
+	flatbuffers "github.com/google/flatbuffers/go"
 )
 
 type Vec2 struct {
@@ -17,18 +18,16 @@ type Vec2 struct {
 
 var printBuffer []byte = make([]byte, 2048)
 
-var gameStateBuffer []byte = make([]byte, 1)
+var gameStateBuffer []byte = make([]byte, 64*1024)
 
 func log(message string) {
 	ptr, size := stringToPtr(message)
 	_log(ptr, size)
-	runtime.KeepAlive(message) // keep message alive until ptr is no longer needed.
 }
 
 func logb(message []byte) {
 	ptr, size := bytesToPtr(message)
 	_log(ptr, size)
-	runtime.KeepAlive(message) // keep message alive until ptr is no longer needed.
 }
 
 // stringToPtr returns a pointer and size pair for the given string in a way
@@ -59,14 +58,6 @@ func (b BufferTooSmall) Error() string {
 	return "buffer too small"
 }
 
-func getGameState() (*gamestate.GameState, error) {
-	size := _getGameState(bytesToPtr(gameStateBuffer))
-	if size > int32(cap(gameStateBuffer)) {
-		return nil, BufferTooSmall{SizeNeeded: size}
-	}
-	return gamestate.GetRootAsGameState(gameStateBuffer[:size], 0), nil
-}
-
 func appendFloat32(dst []byte, data float64) []byte {
 	whole, fraction := math.Modf(data)
 	integerWhole := int(math.Floor(whole))
@@ -87,6 +78,12 @@ var shipId uint64
 var enemyId uint64
 var enemyPosition Vec2
 
+func doNothing() {
+	log("inside doNothing!")
+}
+
+var gameState *gamestate.GameState = &gamestate.GameState{}
+
 //go:export step
 func step() {
 	defer func() {
@@ -95,23 +92,39 @@ func step() {
 
 	turretRotation = float32(stepCount) * math.Pi / 60
 
-	gameState, err := getGameState()
-	for err != nil {
-		tooSmallErr := err.(BufferTooSmall)
+	printBuffer = printBuffer[:0]
+	printBuffer = append(printBuffer, []byte("do nothing")...)
+	logb(printBuffer)
+
+	printBuffer = printBuffer[:0]
+	printBuffer = append(printBuffer, []byte("do nothing again")...)
+	logb(printBuffer)
+
+	doNothing()
+
+	size := _getGameState(bytesToPtr(gameStateBuffer))
+	if size > int32(cap(gameStateBuffer)) {
 		log("error on getting game state. buffer too small")
-		gameStateBuffer = make([]byte, 3*tooSmallErr.SizeNeeded/2)
-		gameState, err = getGameState()
+		return
 	}
 
+	n := flatbuffers.GetUOffsetT(gameStateBuffer[:size])
+	gameState.Init(gameStateBuffer, n)
+
+	log("looping entities")
 	for idx := range gameState.EntitiesLength() {
+		log("loop")
 		var entity gamestate.Entity
+		log("initialize entity")
 		gameState.Entities(&entity, idx)
 		my := entity.My()
 		id := entity.Id()
 		var position gamestate.Vec2
+		log("initialize position")
 		entity.Position(&position)
 		posX := float32(position.X())
 		posY := float32(position.Y())
+		log("initialized entity")
 
 		if my {
 			if stepCount == 0 {
