@@ -78,10 +78,6 @@ var shipId uint64
 var enemyId uint64
 var enemyPosition Vec2
 
-func doNothing() {
-	log("inside doNothing!")
-}
-
 var gameState *gamestate.GameState = &gamestate.GameState{}
 
 //go:export step
@@ -92,16 +88,6 @@ func step() {
 
 	turretRotation = float32(stepCount) * math.Pi / 60
 
-	printBuffer = printBuffer[:0]
-	printBuffer = append(printBuffer, []byte("do nothing")...)
-	logb(printBuffer)
-
-	printBuffer = printBuffer[:0]
-	printBuffer = append(printBuffer, []byte("do nothing again")...)
-	logb(printBuffer)
-
-	doNothing()
-
 	size := _getGameState(bytesToPtr(gameStateBuffer))
 	if size > int32(cap(gameStateBuffer)) {
 		log("error on getting game state. buffer too small")
@@ -111,20 +97,15 @@ func step() {
 	n := flatbuffers.GetUOffsetT(gameStateBuffer[:size])
 	gameState.Init(gameStateBuffer, n)
 
-	log("looping entities")
 	for idx := range gameState.EntitiesLength() {
-		log("loop")
 		var entity gamestate.Entity
-		log("initialize entity")
 		gameState.Entities(&entity, idx)
 		my := entity.My()
 		id := entity.Id()
 		var position gamestate.Vec2
-		log("initialize position")
 		entity.Position(&position)
 		posX := float32(position.X())
 		posY := float32(position.Y())
-		log("initialized entity")
 
 		if my {
 			if stepCount == 0 {
