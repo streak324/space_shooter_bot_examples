@@ -84,7 +84,7 @@ static Vec enemy_position = {};
 EMSCRIPTEN_KEEPALIVE void step()
 {
 	if (step_count == 0) {
-		const i32 game_state_buffer_capacity = 8 * 1024;
+		const i32 game_state_buffer_capacity = 64 * 1024;
 		game_state_buffer.ptr = (i8*) malloc(game_state_buffer_capacity);
 		game_state_buffer.offset = 0;
 		game_state_buffer.capacity = game_state_buffer_capacity;
