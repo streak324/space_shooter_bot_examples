@@ -755,20 +755,19 @@ func (rcv *Entity) MutateIsCommandable(n bool) bool {
 	return rcv._tab.MutateBoolSlot(8, n)
 }
 
-func (rcv *Entity) Position(obj *Vec2) *Vec2 {
+func (rcv *Entity) EntityType() int32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		x := rcv._tab.Indirect(o + rcv._tab.Pos)
-		if obj == nil {
-			obj = new(Vec2)
-		}
-		obj.Init(rcv._tab.Bytes, x)
-		return obj
+		return rcv._tab.GetInt32(o + rcv._tab.Pos)
 	}
-	return nil
+	return 0
 }
 
-func (rcv *Entity) LinearVelocity(obj *Vec2) *Vec2 {
+func (rcv *Entity) MutateEntityType(n int32) bool {
+	return rcv._tab.MutateInt32Slot(10, n)
+}
+
+func (rcv *Entity) Position(obj *Vec2) *Vec2 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
@@ -781,8 +780,21 @@ func (rcv *Entity) LinearVelocity(obj *Vec2) *Vec2 {
 	return nil
 }
 
-func (rcv *Entity) Owner() int32 {
+func (rcv *Entity) LinearVelocity(obj *Vec2) *Vec2 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(Vec2)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *Entity) Owner() int32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
 		return rcv._tab.GetInt32(o + rcv._tab.Pos)
 	}
@@ -790,22 +802,10 @@ func (rcv *Entity) Owner() int32 {
 }
 
 func (rcv *Entity) MutateOwner(n int32) bool {
-	return rcv._tab.MutateInt32Slot(14, n)
+	return rcv._tab.MutateInt32Slot(16, n)
 }
 
 func (rcv *Entity) Rotation() float32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
-	if o != 0 {
-		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
-	}
-	return 0.0
-}
-
-func (rcv *Entity) MutateRotation(n float32) bool {
-	return rcv._tab.MutateFloat32Slot(16, n)
-}
-
-func (rcv *Entity) AngularVelocity() float32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
@@ -813,12 +813,24 @@ func (rcv *Entity) AngularVelocity() float32 {
 	return 0.0
 }
 
-func (rcv *Entity) MutateAngularVelocity(n float32) bool {
+func (rcv *Entity) MutateRotation(n float32) bool {
 	return rcv._tab.MutateFloat32Slot(18, n)
 }
 
-func (rcv *Entity) Blocks(obj *Block, j int) bool {
+func (rcv *Entity) AngularVelocity() float32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
+	}
+	return 0.0
+}
+
+func (rcv *Entity) MutateAngularVelocity(n float32) bool {
+	return rcv._tab.MutateFloat32Slot(20, n)
+}
+
+func (rcv *Entity) Blocks(obj *Block, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -830,7 +842,7 @@ func (rcv *Entity) Blocks(obj *Block, j int) bool {
 }
 
 func (rcv *Entity) BlocksLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -838,7 +850,7 @@ func (rcv *Entity) BlocksLength() int {
 }
 
 func (rcv *Entity) Projectile(obj *Projectile) *Projectile {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
@@ -851,7 +863,7 @@ func (rcv *Entity) Projectile(obj *Projectile) *Projectile {
 }
 
 func EntityStart(builder *flatbuffers.Builder) {
-	builder.StartObject(10)
+	builder.StartObject(11)
 }
 func EntityAddId(builder *flatbuffers.Builder, id uint64) {
 	builder.PrependUint64Slot(0, id, 0)
@@ -862,29 +874,32 @@ func EntityAddMy(builder *flatbuffers.Builder, my bool) {
 func EntityAddIsCommandable(builder *flatbuffers.Builder, isCommandable bool) {
 	builder.PrependBoolSlot(2, isCommandable, false)
 }
+func EntityAddEntityType(builder *flatbuffers.Builder, entityType int32) {
+	builder.PrependInt32Slot(3, entityType, 0)
+}
 func EntityAddPosition(builder *flatbuffers.Builder, position flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(position), 0)
+	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(position), 0)
 }
 func EntityAddLinearVelocity(builder *flatbuffers.Builder, linearVelocity flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(linearVelocity), 0)
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(linearVelocity), 0)
 }
 func EntityAddOwner(builder *flatbuffers.Builder, owner int32) {
-	builder.PrependInt32Slot(5, owner, 0)
+	builder.PrependInt32Slot(6, owner, 0)
 }
 func EntityAddRotation(builder *flatbuffers.Builder, rotation float32) {
-	builder.PrependFloat32Slot(6, rotation, 0.0)
+	builder.PrependFloat32Slot(7, rotation, 0.0)
 }
 func EntityAddAngularVelocity(builder *flatbuffers.Builder, angularVelocity float32) {
-	builder.PrependFloat32Slot(7, angularVelocity, 0.0)
+	builder.PrependFloat32Slot(8, angularVelocity, 0.0)
 }
 func EntityAddBlocks(builder *flatbuffers.Builder, blocks flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(blocks), 0)
+	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(blocks), 0)
 }
 func EntityStartBlocksVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func EntityAddProjectile(builder *flatbuffers.Builder, projectile flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(projectile), 0)
+	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(projectile), 0)
 }
 func EntityEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -964,8 +979,32 @@ func (rcv *GameState) ExplosionsLength() int {
 	return 0
 }
 
+func (rcv *GameState) MyId() int32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetInt32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *GameState) MutateMyId(n int32) bool {
+	return rcv._tab.MutateInt32Slot(8, n)
+}
+
+func (rcv *GameState) WinnerId() int32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetInt32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *GameState) MutateWinnerId(n int32) bool {
+	return rcv._tab.MutateInt32Slot(10, n)
+}
+
 func GameStateStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(4)
 }
 func GameStateAddEntities(builder *flatbuffers.Builder, entities flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(entities), 0)
@@ -978,6 +1017,12 @@ func GameStateAddExplosions(builder *flatbuffers.Builder, explosions flatbuffers
 }
 func GameStateStartExplosionsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
+}
+func GameStateAddMyId(builder *flatbuffers.Builder, myId int32) {
+	builder.PrependInt32Slot(2, myId, 0)
+}
+func GameStateAddWinnerId(builder *flatbuffers.Builder, winnerId int32) {
+	builder.PrependInt32Slot(3, winnerId, 0)
 }
 func GameStateEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
