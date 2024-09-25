@@ -497,92 +497,6 @@ func BlockAddShield(builder *flatbuffers.Builder, shield flatbuffers.UOffsetT) {
 func BlockEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
-type Projectile struct {
-	_tab flatbuffers.Table
-}
-
-func GetRootAsProjectile(buf []byte, offset flatbuffers.UOffsetT) *Projectile {
-	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &Projectile{}
-	x.Init(buf, n+offset)
-	return x
-}
-
-func FinishProjectileBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
-	builder.Finish(offset)
-}
-
-func GetSizePrefixedRootAsProjectile(buf []byte, offset flatbuffers.UOffsetT) *Projectile {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &Projectile{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
-func FinishSizePrefixedProjectileBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
-	builder.FinishSizePrefixed(offset)
-}
-
-func (rcv *Projectile) Init(buf []byte, i flatbuffers.UOffsetT) {
-	rcv._tab.Bytes = buf
-	rcv._tab.Pos = i
-}
-
-func (rcv *Projectile) Table() flatbuffers.Table {
-	return rcv._tab
-}
-
-func (rcv *Projectile) Size() float32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
-	}
-	return 0.0
-}
-
-func (rcv *Projectile) MutateSize(n float32) bool {
-	return rcv._tab.MutateFloat32Slot(4, n)
-}
-
-func (rcv *Projectile) Damage() float32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
-	}
-	return 0.0
-}
-
-func (rcv *Projectile) MutateDamage(n float32) bool {
-	return rcv._tab.MutateFloat32Slot(6, n)
-}
-
-func (rcv *Projectile) BlockConfigId() uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.GetUint32(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *Projectile) MutateBlockConfigId(n uint32) bool {
-	return rcv._tab.MutateUint32Slot(8, n)
-}
-
-func ProjectileStart(builder *flatbuffers.Builder) {
-	builder.StartObject(3)
-}
-func ProjectileAddSize(builder *flatbuffers.Builder, size float32) {
-	builder.PrependFloat32Slot(0, size, 0.0)
-}
-func ProjectileAddDamage(builder *flatbuffers.Builder, damage float32) {
-	builder.PrependFloat32Slot(1, damage, 0.0)
-}
-func ProjectileAddBlockConfigId(builder *flatbuffers.Builder, blockConfigId uint32) {
-	builder.PrependUint32Slot(2, blockConfigId, 0)
-}
-func ProjectileEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
-	return builder.EndObject()
-}
 type Explosion struct {
 	_tab flatbuffers.Table
 }
@@ -755,20 +669,8 @@ func (rcv *Entity) MutateIsCommandable(n bool) bool {
 	return rcv._tab.MutateBoolSlot(8, n)
 }
 
-func (rcv *Entity) EntityType() int32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		return rcv._tab.GetInt32(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *Entity) MutateEntityType(n int32) bool {
-	return rcv._tab.MutateInt32Slot(10, n)
-}
-
 func (rcv *Entity) Position(obj *Vec2) *Vec2 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
@@ -781,7 +683,7 @@ func (rcv *Entity) Position(obj *Vec2) *Vec2 {
 }
 
 func (rcv *Entity) LinearVelocity(obj *Vec2) *Vec2 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
@@ -793,20 +695,20 @@ func (rcv *Entity) LinearVelocity(obj *Vec2) *Vec2 {
 	return nil
 }
 
-func (rcv *Entity) Owner() int32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+func (rcv *Entity) Owner() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
-		return rcv._tab.GetInt32(o + rcv._tab.Pos)
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *Entity) MutateOwner(n int32) bool {
-	return rcv._tab.MutateInt32Slot(16, n)
+func (rcv *Entity) MutateOwner(n byte) bool {
+	return rcv._tab.MutateByteSlot(14, n)
 }
 
 func (rcv *Entity) Rotation() float32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
 		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
 	}
@@ -814,11 +716,11 @@ func (rcv *Entity) Rotation() float32 {
 }
 
 func (rcv *Entity) MutateRotation(n float32) bool {
-	return rcv._tab.MutateFloat32Slot(18, n)
+	return rcv._tab.MutateFloat32Slot(16, n)
 }
 
 func (rcv *Entity) AngularVelocity() float32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
 	}
@@ -826,11 +728,11 @@ func (rcv *Entity) AngularVelocity() float32 {
 }
 
 func (rcv *Entity) MutateAngularVelocity(n float32) bool {
-	return rcv._tab.MutateFloat32Slot(20, n)
+	return rcv._tab.MutateFloat32Slot(18, n)
 }
 
 func (rcv *Entity) Blocks(obj *Block, j int) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -842,28 +744,15 @@ func (rcv *Entity) Blocks(obj *Block, j int) bool {
 }
 
 func (rcv *Entity) BlocksLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
 }
 
-func (rcv *Entity) Projectile(obj *Projectile) *Projectile {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
-	if o != 0 {
-		x := rcv._tab.Indirect(o + rcv._tab.Pos)
-		if obj == nil {
-			obj = new(Projectile)
-		}
-		obj.Init(rcv._tab.Bytes, x)
-		return obj
-	}
-	return nil
-}
-
 func EntityStart(builder *flatbuffers.Builder) {
-	builder.StartObject(11)
+	builder.StartObject(9)
 }
 func EntityAddId(builder *flatbuffers.Builder, id uint64) {
 	builder.PrependUint64Slot(0, id, 0)
@@ -874,34 +763,247 @@ func EntityAddMy(builder *flatbuffers.Builder, my bool) {
 func EntityAddIsCommandable(builder *flatbuffers.Builder, isCommandable bool) {
 	builder.PrependBoolSlot(2, isCommandable, false)
 }
-func EntityAddEntityType(builder *flatbuffers.Builder, entityType int32) {
-	builder.PrependInt32Slot(3, entityType, 0)
-}
 func EntityAddPosition(builder *flatbuffers.Builder, position flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(position), 0)
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(position), 0)
 }
 func EntityAddLinearVelocity(builder *flatbuffers.Builder, linearVelocity flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(linearVelocity), 0)
+	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(linearVelocity), 0)
 }
-func EntityAddOwner(builder *flatbuffers.Builder, owner int32) {
-	builder.PrependInt32Slot(6, owner, 0)
+func EntityAddOwner(builder *flatbuffers.Builder, owner byte) {
+	builder.PrependByteSlot(5, owner, 0)
 }
 func EntityAddRotation(builder *flatbuffers.Builder, rotation float32) {
-	builder.PrependFloat32Slot(7, rotation, 0.0)
+	builder.PrependFloat32Slot(6, rotation, 0.0)
 }
 func EntityAddAngularVelocity(builder *flatbuffers.Builder, angularVelocity float32) {
-	builder.PrependFloat32Slot(8, angularVelocity, 0.0)
+	builder.PrependFloat32Slot(7, angularVelocity, 0.0)
 }
 func EntityAddBlocks(builder *flatbuffers.Builder, blocks flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(blocks), 0)
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(blocks), 0)
 }
 func EntityStartBlocksVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func EntityAddProjectile(builder *flatbuffers.Builder, projectile flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(projectile), 0)
-}
 func EntityEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+type Projectile struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsProjectile(buf []byte, offset flatbuffers.UOffsetT) *Projectile {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &Projectile{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func FinishProjectileBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
+func GetSizePrefixedRootAsProjectile(buf []byte, offset flatbuffers.UOffsetT) *Projectile {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Projectile{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func FinishSizePrefixedProjectileBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
+}
+
+func (rcv *Projectile) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *Projectile) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *Projectile) My() bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetBool(o + rcv._tab.Pos)
+	}
+	return false
+}
+
+func (rcv *Projectile) MutateMy(n bool) bool {
+	return rcv._tab.MutateBoolSlot(4, n)
+}
+
+func (rcv *Projectile) Position(obj *Vec2) *Vec2 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(Vec2)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *Projectile) LinearVelocity(obj *Vec2) *Vec2 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(Vec2)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *Projectile) Size() float32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
+	}
+	return 0.0
+}
+
+func (rcv *Projectile) MutateSize(n float32) bool {
+	return rcv._tab.MutateFloat32Slot(10, n)
+}
+
+func (rcv *Projectile) Damage() float32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	if o != 0 {
+		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
+	}
+	return 0.0
+}
+
+func (rcv *Projectile) MutateDamage(n float32) bool {
+	return rcv._tab.MutateFloat32Slot(12, n)
+}
+
+func ProjectileStart(builder *flatbuffers.Builder) {
+	builder.StartObject(5)
+}
+func ProjectileAddMy(builder *flatbuffers.Builder, my bool) {
+	builder.PrependBoolSlot(0, my, false)
+}
+func ProjectileAddPosition(builder *flatbuffers.Builder, position flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(position), 0)
+}
+func ProjectileAddLinearVelocity(builder *flatbuffers.Builder, linearVelocity flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(linearVelocity), 0)
+}
+func ProjectileAddSize(builder *flatbuffers.Builder, size float32) {
+	builder.PrependFloat32Slot(3, size, 0.0)
+}
+func ProjectileAddDamage(builder *flatbuffers.Builder, damage float32) {
+	builder.PrependFloat32Slot(4, damage, 0.0)
+}
+func ProjectileEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+type Flag struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsFlag(buf []byte, offset flatbuffers.UOffsetT) *Flag {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &Flag{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func FinishFlagBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
+func GetSizePrefixedRootAsFlag(buf []byte, offset flatbuffers.UOffsetT) *Flag {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Flag{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func FinishSizePrefixedFlagBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
+}
+
+func (rcv *Flag) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *Flag) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *Flag) OwnerId() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *Flag) MutateOwnerId(n byte) bool {
+	return rcv._tab.MutateByteSlot(4, n)
+}
+
+func (rcv *Flag) X() float32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
+	}
+	return 0.0
+}
+
+func (rcv *Flag) MutateX(n float32) bool {
+	return rcv._tab.MutateFloat32Slot(6, n)
+}
+
+func (rcv *Flag) Y() float32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
+	}
+	return 0.0
+}
+
+func (rcv *Flag) MutateY(n float32) bool {
+	return rcv._tab.MutateFloat32Slot(8, n)
+}
+
+func (rcv *Flag) CarrierId() uint64 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetUint64(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *Flag) MutateCarrierId(n uint64) bool {
+	return rcv._tab.MutateUint64Slot(10, n)
+}
+
+func FlagStart(builder *flatbuffers.Builder) {
+	builder.StartObject(4)
+}
+func FlagAddOwnerId(builder *flatbuffers.Builder, ownerId byte) {
+	builder.PrependByteSlot(0, ownerId, 0)
+}
+func FlagAddX(builder *flatbuffers.Builder, x float32) {
+	builder.PrependFloat32Slot(1, x, 0.0)
+}
+func FlagAddY(builder *flatbuffers.Builder, y float32) {
+	builder.PrependFloat32Slot(2, y, 0.0)
+}
+func FlagAddCarrierId(builder *flatbuffers.Builder, carrierId uint64) {
+	builder.PrependUint64Slot(3, carrierId, 0)
+}
+func FlagEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 type GameState struct {
@@ -939,8 +1041,28 @@ func (rcv *GameState) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *GameState) Entities(obj *Entity, j int) bool {
+func (rcv *GameState) Flags(obj *Flag, j int) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *GameState) FlagsLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *GameState) Entities(obj *Entity, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -952,7 +1074,27 @@ func (rcv *GameState) Entities(obj *Entity, j int) bool {
 }
 
 func (rcv *GameState) EntitiesLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *GameState) Projectiles(obj *Projectile, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *GameState) ProjectilesLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -960,7 +1102,7 @@ func (rcv *GameState) EntitiesLength() int {
 }
 
 func (rcv *GameState) Explosions(obj *Explosion, j int) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -972,57 +1114,69 @@ func (rcv *GameState) Explosions(obj *Explosion, j int) bool {
 }
 
 func (rcv *GameState) ExplosionsLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
 }
 
-func (rcv *GameState) MyId() int32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+func (rcv *GameState) MyId() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
-		return rcv._tab.GetInt32(o + rcv._tab.Pos)
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *GameState) MutateMyId(n int32) bool {
-	return rcv._tab.MutateInt32Slot(8, n)
+func (rcv *GameState) MutateMyId(n byte) bool {
+	return rcv._tab.MutateByteSlot(12, n)
 }
 
-func (rcv *GameState) WinnerId() int32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+func (rcv *GameState) WinnerId() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
-		return rcv._tab.GetInt32(o + rcv._tab.Pos)
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *GameState) MutateWinnerId(n int32) bool {
-	return rcv._tab.MutateInt32Slot(10, n)
+func (rcv *GameState) MutateWinnerId(n byte) bool {
+	return rcv._tab.MutateByteSlot(14, n)
 }
 
 func GameStateStart(builder *flatbuffers.Builder) {
-	builder.StartObject(4)
+	builder.StartObject(6)
+}
+func GameStateAddFlags(builder *flatbuffers.Builder, flags flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(flags), 0)
+}
+func GameStateStartFlagsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
 }
 func GameStateAddEntities(builder *flatbuffers.Builder, entities flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(entities), 0)
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(entities), 0)
 }
 func GameStateStartEntitiesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
+func GameStateAddProjectiles(builder *flatbuffers.Builder, projectiles flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(projectiles), 0)
+}
+func GameStateStartProjectilesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
 func GameStateAddExplosions(builder *flatbuffers.Builder, explosions flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(explosions), 0)
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(explosions), 0)
 }
 func GameStateStartExplosionsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func GameStateAddMyId(builder *flatbuffers.Builder, myId int32) {
-	builder.PrependInt32Slot(2, myId, 0)
+func GameStateAddMyId(builder *flatbuffers.Builder, myId byte) {
+	builder.PrependByteSlot(4, myId, 0)
 }
-func GameStateAddWinnerId(builder *flatbuffers.Builder, winnerId int32) {
-	builder.PrependInt32Slot(3, winnerId, 0)
+func GameStateAddWinnerId(builder *flatbuffers.Builder, winnerId byte) {
+	builder.PrependByteSlot(5, winnerId, 0)
 }
 func GameStateEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
