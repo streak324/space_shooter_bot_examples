@@ -160,7 +160,7 @@ func (rcv *MissileSlot) MutateY(n float32) bool {
 	return rcv._tab.MutateFloat32Slot(10, n)
 }
 
-func (rcv *MissileSlot) Rotation() float32 {
+func (rcv *MissileSlot) LocalRotation() float32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
@@ -168,7 +168,7 @@ func (rcv *MissileSlot) Rotation() float32 {
 	return 0.0
 }
 
-func (rcv *MissileSlot) MutateRotation(n float32) bool {
+func (rcv *MissileSlot) MutateLocalRotation(n float32) bool {
 	return rcv._tab.MutateFloat32Slot(12, n)
 }
 
@@ -187,8 +187,8 @@ func MissileSlotAddX(builder *flatbuffers.Builder, x float32) {
 func MissileSlotAddY(builder *flatbuffers.Builder, y float32) {
 	builder.PrependFloat32Slot(3, y, 0.0)
 }
-func MissileSlotAddRotation(builder *flatbuffers.Builder, rotation float32) {
-	builder.PrependFloat32Slot(4, rotation, 0.0)
+func MissileSlotAddLocalRotation(builder *flatbuffers.Builder, localRotation float32) {
+	builder.PrependFloat32Slot(4, localRotation, 0.0)
 }
 func MissileSlotEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

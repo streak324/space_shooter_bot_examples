@@ -189,7 +189,7 @@ __flatbuffers_define_scalar_field(0, MissileSlot, is_loaded, flatbuffers_bool, f
 __flatbuffers_define_scalar_field(1, MissileSlot, reload_timer, flatbuffers_float, float, 0.00000000f)
 __flatbuffers_define_scalar_field(2, MissileSlot, x, flatbuffers_float, float, 0.00000000f)
 __flatbuffers_define_scalar_field(3, MissileSlot, y, flatbuffers_float, float, 0.00000000f)
-__flatbuffers_define_scalar_field(4, MissileSlot, rotation, flatbuffers_float, float, 0.00000000f)
+__flatbuffers_define_scalar_field(4, MissileSlot, local_rotation, flatbuffers_float, float, 0.00000000f)
 
 struct Shield_table { uint8_t unused__; };
 
