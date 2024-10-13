@@ -101,7 +101,7 @@ EMSCRIPTEN_KEEPALIVE void step()
 	for (i = 0; i < num_entities; i++) {
 		Entity_table_t entity = Entity_vec_at(entities, i);
 		flatbuffers_bool_t is_mine = Entity_my_get(entity);
-		Vec2_table_t position = Entity_position_get(entity);
+		Vec2_struct_t position = Entity_position_get(entity);
 
 		if (is_mine) {
 			if (step_count == 0) {
