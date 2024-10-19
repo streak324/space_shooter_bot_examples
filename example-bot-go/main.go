@@ -94,8 +94,8 @@ func step() {
 		return
 	}
 
-	n := flatbuffers.GetUOffsetT(gameStateBuffer[:size])
-	gameState.Init(gameStateBuffer, n)
+	n := flatbuffers.GetUOffsetT(gameStateBuffer[flatbuffers.SizeUint32:])
+	gameState.Init(gameStateBuffer, n+flatbuffers.SizeUint32)
 
 	for idx := range gameState.EntitiesLength() {
 		var entity gamestate.Entity

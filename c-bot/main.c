@@ -93,7 +93,9 @@ EMSCRIPTEN_KEEPALIVE void step()
 	i32 byte_size = botsGetGameState(game_state_buffer.ptr, game_state_buffer.capacity);
 	my_assert(byte_size > game_state_buffer.capacity);
 
-	GameState_table_t game_state = GameState_as_root((void*) game_state_buffer.ptr);
+	size_t size;
+	void * buffer_offset = flatbuffers_read_size_prefix((void*) game_state_buffer.ptr, &size);
+	GameState_table_t game_state = GameState_as_root(buffer_offset);
 	Entity_vec_t entities = GameState_entities_get(game_state);
 	size_t num_entities = Entity_vec_len(entities);
 
