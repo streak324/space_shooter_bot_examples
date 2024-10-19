@@ -23,6 +23,31 @@ typedef const Vec2_t *Vec2_struct_t;
 typedef Vec2_t *Vec2_mutable_struct_t;
 typedef const Vec2_t *Vec2_vec_t;
 typedef Vec2_t *Vec2_mutable_vec_t;
+typedef struct BlockHitUpdate BlockHitUpdate_t;
+typedef const BlockHitUpdate_t *BlockHitUpdate_struct_t;
+typedef BlockHitUpdate_t *BlockHitUpdate_mutable_struct_t;
+typedef const BlockHitUpdate_t *BlockHitUpdate_vec_t;
+typedef BlockHitUpdate_t *BlockHitUpdate_mutable_vec_t;
+typedef struct ThrusterUpdate ThrusterUpdate_t;
+typedef const ThrusterUpdate_t *ThrusterUpdate_struct_t;
+typedef ThrusterUpdate_t *ThrusterUpdate_mutable_struct_t;
+typedef const ThrusterUpdate_t *ThrusterUpdate_vec_t;
+typedef ThrusterUpdate_t *ThrusterUpdate_mutable_vec_t;
+typedef struct ShieldUpdate ShieldUpdate_t;
+typedef const ShieldUpdate_t *ShieldUpdate_struct_t;
+typedef ShieldUpdate_t *ShieldUpdate_mutable_struct_t;
+typedef const ShieldUpdate_t *ShieldUpdate_vec_t;
+typedef ShieldUpdate_t *ShieldUpdate_mutable_vec_t;
+typedef struct MissileSlotUpdate MissileSlotUpdate_t;
+typedef const MissileSlotUpdate_t *MissileSlotUpdate_struct_t;
+typedef MissileSlotUpdate_t *MissileSlotUpdate_mutable_struct_t;
+typedef const MissileSlotUpdate_t *MissileSlotUpdate_vec_t;
+typedef MissileSlotUpdate_t *MissileSlotUpdate_mutable_vec_t;
+typedef struct TurretUpdate TurretUpdate_t;
+typedef const TurretUpdate_t *TurretUpdate_struct_t;
+typedef TurretUpdate_t *TurretUpdate_mutable_struct_t;
+typedef const TurretUpdate_t *TurretUpdate_vec_t;
+typedef TurretUpdate_t *TurretUpdate_mutable_vec_t;
 
 typedef const struct MissileSlot_table *MissileSlot_table_t;
 typedef struct MissileSlot_table *MissileSlot_mutable_table_t;
@@ -60,30 +85,14 @@ typedef const struct GameState_table *GameState_table_t;
 typedef struct GameState_table *GameState_mutable_table_t;
 typedef const flatbuffers_uoffset_t *GameState_vec_t;
 typedef flatbuffers_uoffset_t *GameState_mutable_vec_t;
-typedef const struct BlockHitUpdate_table *BlockHitUpdate_table_t;
-typedef struct BlockHitUpdate_table *BlockHitUpdate_mutable_table_t;
-typedef const flatbuffers_uoffset_t *BlockHitUpdate_vec_t;
-typedef flatbuffers_uoffset_t *BlockHitUpdate_mutable_vec_t;
-typedef const struct ThrusterUpdate_table *ThrusterUpdate_table_t;
-typedef struct ThrusterUpdate_table *ThrusterUpdate_mutable_table_t;
-typedef const flatbuffers_uoffset_t *ThrusterUpdate_vec_t;
-typedef flatbuffers_uoffset_t *ThrusterUpdate_mutable_vec_t;
-typedef const struct ShieldUpdate_table *ShieldUpdate_table_t;
-typedef struct ShieldUpdate_table *ShieldUpdate_mutable_table_t;
-typedef const flatbuffers_uoffset_t *ShieldUpdate_vec_t;
-typedef flatbuffers_uoffset_t *ShieldUpdate_mutable_vec_t;
-typedef const struct MissileSlotUpdate_table *MissileSlotUpdate_table_t;
-typedef struct MissileSlotUpdate_table *MissileSlotUpdate_mutable_table_t;
-typedef const flatbuffers_uoffset_t *MissileSlotUpdate_vec_t;
-typedef flatbuffers_uoffset_t *MissileSlotUpdate_mutable_vec_t;
-typedef const struct TurretUpdate_table *TurretUpdate_table_t;
-typedef struct TurretUpdate_table *TurretUpdate_mutable_table_t;
-typedef const flatbuffers_uoffset_t *TurretUpdate_vec_t;
-typedef flatbuffers_uoffset_t *TurretUpdate_mutable_vec_t;
 typedef const struct EntityUpdate_table *EntityUpdate_table_t;
 typedef struct EntityUpdate_table *EntityUpdate_mutable_table_t;
 typedef const flatbuffers_uoffset_t *EntityUpdate_vec_t;
 typedef flatbuffers_uoffset_t *EntityUpdate_mutable_vec_t;
+typedef const struct SingleBlockEntityUpdate_table *SingleBlockEntityUpdate_table_t;
+typedef struct SingleBlockEntityUpdate_table *SingleBlockEntityUpdate_mutable_table_t;
+typedef const flatbuffers_uoffset_t *SingleBlockEntityUpdate_vec_t;
+typedef flatbuffers_uoffset_t *SingleBlockEntityUpdate_mutable_vec_t;
 typedef const struct GameStateDelta_table *GameStateDelta_table_t;
 typedef struct GameStateDelta_table *GameStateDelta_mutable_table_t;
 typedef const flatbuffers_uoffset_t *GameStateDelta_vec_t;
@@ -280,6 +289,18 @@ typedef flatbuffers_uoffset_t *GameStateDelta_mutable_vec_t;
 #ifndef EntityUpdate_file_extension
 #define EntityUpdate_file_extension "bin"
 #endif
+#ifndef SingleBlockEntityUpdate_file_identifier
+#define SingleBlockEntityUpdate_file_identifier 0
+#endif
+/* deprecated, use SingleBlockEntityUpdate_file_identifier */
+#ifndef SingleBlockEntityUpdate_identifier
+#define SingleBlockEntityUpdate_identifier 0
+#endif
+#define SingleBlockEntityUpdate_type_hash ((flatbuffers_thash_t)0x87620b0c)
+#define SingleBlockEntityUpdate_type_identifier "\x0c\x0b\x62\x87"
+#ifndef SingleBlockEntityUpdate_file_extension
+#define SingleBlockEntityUpdate_file_extension "bin"
+#endif
 #ifndef GameStateDelta_file_identifier
 #define GameStateDelta_file_identifier 0
 #endif
@@ -311,6 +332,104 @@ __flatbuffers_struct_as_root(Vec2)
 
 __flatbuffers_define_struct_scalar_field(Vec2, x, flatbuffers_float, float)
 __flatbuffers_define_struct_scalar_field(Vec2, y, flatbuffers_float, float)
+
+struct BlockHitUpdate {
+    alignas(4) uint16_t block_index;
+    alignas(4) float hitpoints;
+    alignas(1) flatbuffers_bool_t is_destroyed;
+};
+static_assert(sizeof(BlockHitUpdate_t) == 12, "struct size mismatch");
+
+static inline const BlockHitUpdate_t *BlockHitUpdate__const_ptr_add(const BlockHitUpdate_t *p, size_t i) { return p + i; }
+static inline BlockHitUpdate_t *BlockHitUpdate__ptr_add(BlockHitUpdate_t *p, size_t i) { return p + i; }
+static inline BlockHitUpdate_struct_t BlockHitUpdate_vec_at(BlockHitUpdate_vec_t vec, size_t i)
+__flatbuffers_struct_vec_at(vec, i)
+static inline size_t BlockHitUpdate__size(void) { return 12; }
+static inline size_t BlockHitUpdate_vec_len(BlockHitUpdate_vec_t vec)
+__flatbuffers_vec_len(vec)
+__flatbuffers_struct_as_root(BlockHitUpdate)
+
+__flatbuffers_define_struct_scalar_field(BlockHitUpdate, block_index, flatbuffers_uint16, uint16_t)
+__flatbuffers_define_struct_scalar_field(BlockHitUpdate, hitpoints, flatbuffers_float, float)
+__flatbuffers_define_struct_scalar_field(BlockHitUpdate, is_destroyed, flatbuffers_bool, flatbuffers_bool_t)
+
+struct ThrusterUpdate {
+    alignas(4) uint16_t block_index;
+    alignas(4) float applied_thrust;
+};
+static_assert(sizeof(ThrusterUpdate_t) == 8, "struct size mismatch");
+
+static inline const ThrusterUpdate_t *ThrusterUpdate__const_ptr_add(const ThrusterUpdate_t *p, size_t i) { return p + i; }
+static inline ThrusterUpdate_t *ThrusterUpdate__ptr_add(ThrusterUpdate_t *p, size_t i) { return p + i; }
+static inline ThrusterUpdate_struct_t ThrusterUpdate_vec_at(ThrusterUpdate_vec_t vec, size_t i)
+__flatbuffers_struct_vec_at(vec, i)
+static inline size_t ThrusterUpdate__size(void) { return 8; }
+static inline size_t ThrusterUpdate_vec_len(ThrusterUpdate_vec_t vec)
+__flatbuffers_vec_len(vec)
+__flatbuffers_struct_as_root(ThrusterUpdate)
+
+__flatbuffers_define_struct_scalar_field(ThrusterUpdate, block_index, flatbuffers_uint16, uint16_t)
+__flatbuffers_define_struct_scalar_field(ThrusterUpdate, applied_thrust, flatbuffers_float, float)
+
+struct ShieldUpdate {
+    alignas(4) uint16_t block_index;
+    alignas(4) float hitpoints;
+    alignas(1) flatbuffers_bool_t is_destroyed;
+};
+static_assert(sizeof(ShieldUpdate_t) == 12, "struct size mismatch");
+
+static inline const ShieldUpdate_t *ShieldUpdate__const_ptr_add(const ShieldUpdate_t *p, size_t i) { return p + i; }
+static inline ShieldUpdate_t *ShieldUpdate__ptr_add(ShieldUpdate_t *p, size_t i) { return p + i; }
+static inline ShieldUpdate_struct_t ShieldUpdate_vec_at(ShieldUpdate_vec_t vec, size_t i)
+__flatbuffers_struct_vec_at(vec, i)
+static inline size_t ShieldUpdate__size(void) { return 12; }
+static inline size_t ShieldUpdate_vec_len(ShieldUpdate_vec_t vec)
+__flatbuffers_vec_len(vec)
+__flatbuffers_struct_as_root(ShieldUpdate)
+
+__flatbuffers_define_struct_scalar_field(ShieldUpdate, block_index, flatbuffers_uint16, uint16_t)
+__flatbuffers_define_struct_scalar_field(ShieldUpdate, hitpoints, flatbuffers_float, float)
+__flatbuffers_define_struct_scalar_field(ShieldUpdate, is_destroyed, flatbuffers_bool, flatbuffers_bool_t)
+
+struct MissileSlotUpdate {
+    alignas(4) uint16_t block_index;
+    alignas(1) uint8_t slot_index;
+    alignas(1) flatbuffers_bool_t is_loaded;
+    alignas(4) float local_rotation;
+};
+static_assert(sizeof(MissileSlotUpdate_t) == 8, "struct size mismatch");
+
+static inline const MissileSlotUpdate_t *MissileSlotUpdate__const_ptr_add(const MissileSlotUpdate_t *p, size_t i) { return p + i; }
+static inline MissileSlotUpdate_t *MissileSlotUpdate__ptr_add(MissileSlotUpdate_t *p, size_t i) { return p + i; }
+static inline MissileSlotUpdate_struct_t MissileSlotUpdate_vec_at(MissileSlotUpdate_vec_t vec, size_t i)
+__flatbuffers_struct_vec_at(vec, i)
+static inline size_t MissileSlotUpdate__size(void) { return 8; }
+static inline size_t MissileSlotUpdate_vec_len(MissileSlotUpdate_vec_t vec)
+__flatbuffers_vec_len(vec)
+__flatbuffers_struct_as_root(MissileSlotUpdate)
+
+__flatbuffers_define_struct_scalar_field(MissileSlotUpdate, block_index, flatbuffers_uint16, uint16_t)
+__flatbuffers_define_struct_scalar_field(MissileSlotUpdate, slot_index, flatbuffers_uint8, uint8_t)
+__flatbuffers_define_struct_scalar_field(MissileSlotUpdate, is_loaded, flatbuffers_bool, flatbuffers_bool_t)
+__flatbuffers_define_struct_scalar_field(MissileSlotUpdate, local_rotation, flatbuffers_float, float)
+
+struct TurretUpdate {
+    alignas(4) uint16_t block_index;
+    alignas(4) float local_rotation;
+};
+static_assert(sizeof(TurretUpdate_t) == 8, "struct size mismatch");
+
+static inline const TurretUpdate_t *TurretUpdate__const_ptr_add(const TurretUpdate_t *p, size_t i) { return p + i; }
+static inline TurretUpdate_t *TurretUpdate__ptr_add(TurretUpdate_t *p, size_t i) { return p + i; }
+static inline TurretUpdate_struct_t TurretUpdate_vec_at(TurretUpdate_vec_t vec, size_t i)
+__flatbuffers_struct_vec_at(vec, i)
+static inline size_t TurretUpdate__size(void) { return 8; }
+static inline size_t TurretUpdate_vec_len(TurretUpdate_vec_t vec)
+__flatbuffers_vec_len(vec)
+__flatbuffers_struct_as_root(TurretUpdate)
+
+__flatbuffers_define_struct_scalar_field(TurretUpdate, block_index, flatbuffers_uint16, uint16_t)
+__flatbuffers_define_struct_scalar_field(TurretUpdate, local_rotation, flatbuffers_float, float)
 
 
 struct MissileSlot_table { uint8_t unused__; };
@@ -447,65 +566,6 @@ __flatbuffers_define_vector_field(4, GameState, explosions, Explosion_vec_t, 0)
 __flatbuffers_define_scalar_field(5, GameState, my_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
 __flatbuffers_define_scalar_field(6, GameState, winner_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
 
-struct BlockHitUpdate_table { uint8_t unused__; };
-
-static inline size_t BlockHitUpdate_vec_len(BlockHitUpdate_vec_t vec)
-__flatbuffers_vec_len(vec)
-static inline BlockHitUpdate_table_t BlockHitUpdate_vec_at(BlockHitUpdate_vec_t vec, size_t i)
-__flatbuffers_offset_vec_at(BlockHitUpdate_table_t, vec, i, 0)
-__flatbuffers_table_as_root(BlockHitUpdate)
-
-__flatbuffers_define_scalar_field(0, BlockHitUpdate, block_index, flatbuffers_uint16, uint16_t, UINT16_C(0))
-__flatbuffers_define_scalar_field(1, BlockHitUpdate, hitpoints, flatbuffers_float, float, 0.00000000f)
-__flatbuffers_define_scalar_field(2, BlockHitUpdate, is_destroyed, flatbuffers_bool, flatbuffers_bool_t, UINT8_C(0))
-
-struct ThrusterUpdate_table { uint8_t unused__; };
-
-static inline size_t ThrusterUpdate_vec_len(ThrusterUpdate_vec_t vec)
-__flatbuffers_vec_len(vec)
-static inline ThrusterUpdate_table_t ThrusterUpdate_vec_at(ThrusterUpdate_vec_t vec, size_t i)
-__flatbuffers_offset_vec_at(ThrusterUpdate_table_t, vec, i, 0)
-__flatbuffers_table_as_root(ThrusterUpdate)
-
-__flatbuffers_define_scalar_field(0, ThrusterUpdate, block_index, flatbuffers_uint16, uint16_t, UINT16_C(0))
-__flatbuffers_define_scalar_field(1, ThrusterUpdate, applied_thrust, flatbuffers_float, float, 0.00000000f)
-
-struct ShieldUpdate_table { uint8_t unused__; };
-
-static inline size_t ShieldUpdate_vec_len(ShieldUpdate_vec_t vec)
-__flatbuffers_vec_len(vec)
-static inline ShieldUpdate_table_t ShieldUpdate_vec_at(ShieldUpdate_vec_t vec, size_t i)
-__flatbuffers_offset_vec_at(ShieldUpdate_table_t, vec, i, 0)
-__flatbuffers_table_as_root(ShieldUpdate)
-
-__flatbuffers_define_scalar_field(0, ShieldUpdate, block_index, flatbuffers_uint16, uint16_t, UINT16_C(0))
-__flatbuffers_define_scalar_field(1, ShieldUpdate, hitpoints, flatbuffers_float, float, 0.00000000f)
-__flatbuffers_define_scalar_field(2, ShieldUpdate, is_destroyed, flatbuffers_bool, flatbuffers_bool_t, UINT8_C(0))
-
-struct MissileSlotUpdate_table { uint8_t unused__; };
-
-static inline size_t MissileSlotUpdate_vec_len(MissileSlotUpdate_vec_t vec)
-__flatbuffers_vec_len(vec)
-static inline MissileSlotUpdate_table_t MissileSlotUpdate_vec_at(MissileSlotUpdate_vec_t vec, size_t i)
-__flatbuffers_offset_vec_at(MissileSlotUpdate_table_t, vec, i, 0)
-__flatbuffers_table_as_root(MissileSlotUpdate)
-
-__flatbuffers_define_scalar_field(0, MissileSlotUpdate, block_index, flatbuffers_uint16, uint16_t, UINT16_C(0))
-__flatbuffers_define_scalar_field(1, MissileSlotUpdate, slot_index, flatbuffers_uint8, uint8_t, UINT8_C(0))
-__flatbuffers_define_scalar_field(2, MissileSlotUpdate, is_loaded, flatbuffers_bool, flatbuffers_bool_t, UINT8_C(0))
-__flatbuffers_define_scalar_field(3, MissileSlotUpdate, local_rotation, flatbuffers_float, float, 0.00000000f)
-
-struct TurretUpdate_table { uint8_t unused__; };
-
-static inline size_t TurretUpdate_vec_len(TurretUpdate_vec_t vec)
-__flatbuffers_vec_len(vec)
-static inline TurretUpdate_table_t TurretUpdate_vec_at(TurretUpdate_vec_t vec, size_t i)
-__flatbuffers_offset_vec_at(TurretUpdate_table_t, vec, i, 0)
-__flatbuffers_table_as_root(TurretUpdate)
-
-__flatbuffers_define_scalar_field(0, TurretUpdate, block_index, flatbuffers_uint16, uint16_t, UINT16_C(0))
-__flatbuffers_define_scalar_field(1, TurretUpdate, local_rotation, flatbuffers_float, float, 0.00000000f)
-
 struct EntityUpdate_table { uint8_t unused__; };
 
 static inline size_t EntityUpdate_vec_len(EntityUpdate_vec_t vec)
@@ -525,6 +585,21 @@ __flatbuffers_define_vector_field(7, EntityUpdate, shield_updates, ShieldUpdate_
 __flatbuffers_define_vector_field(8, EntityUpdate, missile_slot_updates, MissileSlotUpdate_vec_t, 0)
 __flatbuffers_define_vector_field(9, EntityUpdate, turret_updates, TurretUpdate_vec_t, 0)
 
+struct SingleBlockEntityUpdate_table { uint8_t unused__; };
+
+static inline size_t SingleBlockEntityUpdate_vec_len(SingleBlockEntityUpdate_vec_t vec)
+__flatbuffers_vec_len(vec)
+static inline SingleBlockEntityUpdate_table_t SingleBlockEntityUpdate_vec_at(SingleBlockEntityUpdate_vec_t vec, size_t i)
+__flatbuffers_offset_vec_at(SingleBlockEntityUpdate_table_t, vec, i, 0)
+__flatbuffers_table_as_root(SingleBlockEntityUpdate)
+
+__flatbuffers_define_scalar_field(0, SingleBlockEntityUpdate, id, flatbuffers_uint64, uint64_t, UINT64_C(0))
+__flatbuffers_define_struct_field(1, SingleBlockEntityUpdate, position, Vec2_struct_t, 0)
+__flatbuffers_define_struct_field(2, SingleBlockEntityUpdate, linear_velocity, Vec2_struct_t, 0)
+__flatbuffers_define_scalar_field(3, SingleBlockEntityUpdate, rotation, flatbuffers_float, float, 0.00000000f)
+__flatbuffers_define_scalar_field(4, SingleBlockEntityUpdate, hitpoints, flatbuffers_float, float, 0.00000000f)
+__flatbuffers_define_scalar_field(5, SingleBlockEntityUpdate, turret_rotation, flatbuffers_float, float, 0.00000000f)
+
 struct GameStateDelta_table { uint8_t unused__; };
 
 static inline size_t GameStateDelta_vec_len(GameStateDelta_vec_t vec)
@@ -536,12 +611,13 @@ __flatbuffers_table_as_root(GameStateDelta)
 __flatbuffers_define_vector_field(0, GameStateDelta, flag_updates, Flag_vec_t, 0)
 __flatbuffers_define_vector_field(1, GameStateDelta, new_entities, Entity_vec_t, 0)
 __flatbuffers_define_vector_field(2, GameStateDelta, entity_updates, EntityUpdate_vec_t, 0)
-__flatbuffers_define_vector_field(3, GameStateDelta, dead_entities, flatbuffers_uint64_vec_t, 0)
-__flatbuffers_define_vector_field(4, GameStateDelta, new_projectiles, Projectile_vec_t, 0)
-__flatbuffers_define_vector_field(5, GameStateDelta, dead_projectiles, DeadProjectile_vec_t, 0)
-__flatbuffers_define_vector_field(6, GameStateDelta, explosions, Explosion_vec_t, 0)
-__flatbuffers_define_scalar_field(7, GameStateDelta, my_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
-__flatbuffers_define_scalar_field(8, GameStateDelta, winner_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
+__flatbuffers_define_vector_field(3, GameStateDelta, single_block_entity_updates, SingleBlockEntityUpdate_vec_t, 0)
+__flatbuffers_define_vector_field(4, GameStateDelta, dead_entities, flatbuffers_uint64_vec_t, 0)
+__flatbuffers_define_vector_field(5, GameStateDelta, new_projectiles, Projectile_vec_t, 0)
+__flatbuffers_define_vector_field(6, GameStateDelta, dead_projectiles, DeadProjectile_vec_t, 0)
+__flatbuffers_define_vector_field(7, GameStateDelta, explosions, Explosion_vec_t, 0)
+__flatbuffers_define_scalar_field(8, GameStateDelta, my_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
+__flatbuffers_define_scalar_field(9, GameStateDelta, winner_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
 
 
 #include "flatcc/flatcc_epilogue.h"
