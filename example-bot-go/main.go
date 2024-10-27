@@ -14,9 +14,39 @@ type Vec2 struct {
 	Y float32
 }
 
-// some code taken from https://github.com/tetratelabs/wazero/blob/1e0f88bc1462ca07a33df83004914d3af7f5bcb4/examples/allocation/tinygo/testdata/greet.go
+type Team struct {
+	ownerID  byte
+	basePos  Vec2
+	flagPos  Vec2
+	entities map[uint64]*Entity
+}
 
-var printBuffer []byte = make([]byte, 2048)
+type EntityType int
+
+const (
+	EntityTypeShip EntityType = iota
+	EntityTypeMinion
+)
+
+type Entity struct {
+	entityType EntityType
+	id         uint64
+	pos        Vec2
+	rotation   float32
+	blocks     []Block
+	target     Vec2
+}
+
+type Block struct {
+	featureFlags uint64
+	hitpoints    float32
+	isDestroyed  bool
+	x            float32 // relative to ship
+	y            float32 // relative to ship
+	rotation     float32 // relative to ship
+}
+
+// some code taken from https://github.com/tetratelabs/wazero/blob/1e0f88bc1462ca07a33df83004914d3af7f5bcb4/examples/allocation/tinygo/testdata/greet.go
 
 var gameStateBuffer []byte = make([]byte, 64*1024)
 
@@ -58,30 +88,56 @@ func (b BufferTooSmall) Error() string {
 	return "buffer too small"
 }
 
-func appendFloat32(dst []byte, data float64) []byte {
+type PrintBuffer struct {
+	buffer []byte
+}
+
+func (p *PrintBuffer) appendFloat64(data float64) {
 	whole, fraction := math.Modf(data)
 	integerWhole := int(math.Floor(whole))
 	integerFraction := int(math.Abs(math.Floor(fraction * 1000)))
 
-	dst = strconv.AppendInt(dst, int64(integerWhole), 10)
-	dst = append(dst, '.')
-	dst = strconv.AppendInt(dst, int64(integerFraction), 10)
-	return dst
+	p.buffer = strconv.AppendInt(p.buffer, int64(integerWhole), 10)
+	p.buffer = append(p.buffer, '.')
+	p.buffer = strconv.AppendInt(p.buffer, int64(integerFraction), 10)
+}
+
+func (p *PrintBuffer) appendString(str string) {
+	p.buffer = append(p.buffer, []byte(str)...)
+}
+
+func (p *PrintBuffer) sendAndReset() {
+	logb(p.buffer)
+	p.buffer = p.buffer[:0]
+}
+
+var printBuffer = &PrintBuffer{
+	buffer: make([]byte, 0, 2048),
 }
 
 var stepCount uint64 = 0
-var gotoPoints [2]Vec2
-var gotoIndex = 1
 var turretRotation float32
 
-var shipId uint64
-var enemyId uint64
-var enemyPosition Vec2
+var myTeam Team = Team{
+	entities: make(map[uint64]*Entity),
+}
+var enemyTeam Team = Team{
+	entities: make(map[uint64]*Entity),
+}
 
-var gameState *gamestate.GameState = &gamestate.GameState{}
+var gameStateDelta *gamestate.GameStateDelta = &gamestate.GameStateDelta{}
 
-//go:export step
+type NilU64 struct {
+	IsValid bool
+	Value   uint64
+}
+
+var targetEnemyId NilU64
+
+//go:wasmexport step
 func step() {
+	log("step step step")
+
 	defer func() {
 		stepCount += 1
 	}()
@@ -89,72 +145,179 @@ func step() {
 	turretRotation = float32(stepCount) * math.Pi / 60
 
 	size := _getGameState(bytesToPtr(gameStateBuffer))
+
 	if size > int32(cap(gameStateBuffer)) {
 		log("error on getting game state. buffer too small")
 		return
 	}
 
 	n := flatbuffers.GetUOffsetT(gameStateBuffer[flatbuffers.SizeUint32:])
-	gameState.Init(gameStateBuffer, n+flatbuffers.SizeUint32)
+	gameStateDelta.Init(gameStateBuffer, n+flatbuffers.SizeUint32)
 
-	for idx := range gameState.EntitiesLength() {
+	myId := gameStateDelta.MyId()
+
+	for idx := range gameStateDelta.FlagUpdatesLength() {
+		var flag gamestate.Flag
+		gameStateDelta.FlagUpdates(&flag, idx)
+
+		if flag.OwnerId() == myId {
+			myTeam.flagPos = Vec2{X: flag.X(), Y: flag.Y()}
+			if stepCount == 0 {
+				myTeam.basePos = myTeam.flagPos
+			}
+		} else {
+			enemyTeam.flagPos = Vec2{X: flag.X(), Y: flag.Y()}
+			if stepCount == 0 {
+				enemyTeam.basePos = enemyTeam.flagPos
+			}
+		}
+	}
+
+	for idx := range gameStateDelta.NewEntitiesLength() {
 		var entity gamestate.Entity
-		gameState.Entities(&entity, idx)
-		my := entity.My()
+		gameStateDelta.NewEntities(&entity, idx)
+
+		if !entity.IsCommandable() {
+			continue
+		}
+
+		isMine := entity.Owner() == myId
 		id := entity.Id()
 		var position gamestate.Vec2
 		entity.Position(&position)
 		posX := float32(position.X())
 		posY := float32(position.Y())
 
-		if my {
-			if stepCount == 0 {
-				log("at first step")
-				gotoPoints[0] = Vec2{X: 1.5 * posY, Y: 0.67 * posX}
-				gotoPoints[1] = Vec2{X: posX, Y: posY}
-				shipId = id
-			}
-			gotoPoint := gotoPoints[gotoIndex]
+		entityType := EntityTypeShip
+		if stepCount > 0 {
+			entityType = EntityTypeMinion
+		}
 
-			dx := gotoPoint.X - posX
-			dy := gotoPoint.Y - posY
-			if stepCount == 0 || math.Sqrt(float64(dx*dx+dy*dy)) < 25 {
-				gotoIndex = (gotoIndex + 1) % len(gotoPoints)
-				printBuffer = printBuffer[:0]
-				gotoPoint = gotoPoints[gotoIndex]
-				printBuffer = append(printBuffer, []byte("moving to point (")...)
-				printBuffer = appendFloat32(printBuffer, float64(gotoPoint.X))
-				printBuffer = append(printBuffer, []byte(", ")...)
-				printBuffer = appendFloat32(printBuffer, float64(gotoPoint.Y))
-				printBuffer = append(printBuffer, ')')
-				logb(printBuffer)
+		blocks := make([]Block, 0, entity.BlocksLength())
+		for i := 0; i < entity.BlocksLength(); i++ {
+			var block gamestate.Block
+			entity.Blocks(&block, i)
+			blocks = append(blocks, Block{
+				featureFlags: block.FeatureFlags(),
+				hitpoints:    block.Hitpoints(),
+				isDestroyed:  block.IsDestroyed(),
+				x:            block.X(),
+				y:            block.Y(),
+				rotation:     block.Rotation(),
+			})
+		}
+
+		ent := &Entity{
+			entityType: entityType,
+			id:         entity.Id(),
+			pos:        Vec2{X: posX, Y: posY},
+			rotation:   entity.Rotation(),
+			blocks:     blocks,
+		}
+		if isMine {
+			ent.target = Vec2{-posX, posY}
+			if len(myTeam.entities) == 0 {
+				ent.target = enemyTeam.basePos
 			}
-			if shipId == id {
-				moveEntityToTarget(id, gotoPoint.X, gotoPoint.Y)
-			} else if entity.IsCommandable() {
-				result := moveEntityToTarget(id, enemyPosition.X, enemyPosition.Y)
-				if result != 0 {
-					printBuffer = printBuffer[:0]
-					printBuffer = append(printBuffer, []byte("move result ")...)
-					printBuffer = strconv.AppendInt(printBuffer, int64(result), 10)
-					logb(printBuffer)
+			myTeam.entities[id] = ent
+
+		} else {
+			enemyTeam.entities[id] = ent
+		}
+	}
+
+	for idx := range gameStateDelta.EntityUpdatesLength() {
+		var entityUpdate gamestate.EntityUpdate
+		gameStateDelta.EntityUpdates(&entityUpdate, idx)
+		var position gamestate.Vec2
+		entityUpdate.Position(&position)
+		id := entityUpdate.Id()
+		posX := float32(position.X())
+		posY := float32(position.Y())
+
+		_, isMine := myTeam.entities[entityUpdate.Id()]
+		_, isEnemy := enemyTeam.entities[entityUpdate.Id()]
+
+		if isMine {
+			if entityUpdate.IsCommandable() {
+				myTeam.entities[entityUpdate.Id()].pos = Vec2{X: posX, Y: posY}
+				myTeam.entities[entityUpdate.Id()].rotation = entityUpdate.Rotation()
+			} else {
+				delete(myTeam.entities, id)
+			}
+		}
+
+		if isEnemy {
+			if entityUpdate.IsCommandable() {
+				enemyTeam.entities[entityUpdate.Id()].pos = Vec2{X: posX, Y: posY}
+				enemyTeam.entities[entityUpdate.Id()].rotation = entityUpdate.Rotation()
+				if !targetEnemyId.IsValid {
+					targetEnemyId = NilU64{
+						IsValid: true,
+						Value:   targetEnemyId.Value,
+					}
+				}
+			} else {
+				delete(enemyTeam.entities, id)
+				if targetEnemyId.IsValid && targetEnemyId.Value == id {
+					targetEnemyId.IsValid = false
 				}
 			}
+		}
+	}
 
-			for blockIndex := range entity.BlocksLength() {
-				var block gamestate.Block
-				entity.Blocks(&block, blockIndex)
-				block.FeatureFlags()
-				orientTurret(entity.Id(), uint32(blockIndex), turretRotation)
-				fireCannon(entity.Id(), uint32(blockIndex))
-				launchMissiles(entity.Id(), uint32(blockIndex))
+	for idx := range gameStateDelta.SingleBlockEntityUpdatesLength() {
+		var entityUpdate gamestate.SingleBlockEntityUpdate
+		gameStateDelta.SingleBlockEntityUpdates(&entityUpdate, idx)
+		var position gamestate.Vec2
+		entityUpdate.Position(&position)
+
+		_, isEnemy := myTeam.entities[entityUpdate.Id()]
+		_, isMine := enemyTeam.entities[entityUpdate.Id()]
+
+		if isMine {
+			myTeam.entities[entityUpdate.Id()].pos = Vec2{X: position.X(), Y: position.Y()}
+			myTeam.entities[entityUpdate.Id()].rotation = entityUpdate.Rotation()
+		}
+
+		if isEnemy {
+			enemyTeam.entities[entityUpdate.Id()].pos = Vec2{X: position.X(), Y: position.Y()}
+			enemyTeam.entities[entityUpdate.Id()].rotation = entityUpdate.Rotation()
+		}
+
+	}
+
+	for idx := range gameStateDelta.DeadEntitiesLength() {
+		deadEntityId := gameStateDelta.DeadEntities(idx)
+		delete(enemyTeam.entities, deadEntityId)
+		delete(myTeam.entities, deadEntityId)
+	}
+
+	for _, entity := range myTeam.entities {
+		switch entity.entityType {
+		case EntityTypeMinion:
+			if targetEnemyId.IsValid {
+				enemy, ok := enemyTeam.entities[targetEnemyId.Value]
+				if ok {
+					aimTurret(entity.id, 0, enemy.pos.X, enemy.pos.Y)
+					fireCannon(entity.id, 0)
+					moveEntityToTarget(entity.id, enemy.pos.X, enemy.pos.Y)
+				} else {
+					targetEnemyId.IsValid = false
+				}
 			}
-		} else {
-			if stepCount == 0 {
-				enemyId = id
-			}
-			if enemyId == id {
-				enemyPosition = Vec2{X: posX, Y: posY}
+		case EntityTypeShip:
+			for idx := range entity.blocks {
+				orientTurret(entity.id, uint32(idx), turretRotation)
+				fireCannon(entity.id, uint32(idx))
+				moveEntityToTarget(entity.id, entity.target.X, entity.target.Y)
+				launchMissiles(entity.id, uint32(idx))
+				printBuffer.appendString("moving to target (")
+				printBuffer.appendFloat64(float64(entity.target.X))
+				printBuffer.appendString(",")
+				printBuffer.appendFloat64(float64(entity.target.Y))
+				printBuffer.appendString(")")
+				printBuffer.sendAndReset()
 			}
 		}
 	}
