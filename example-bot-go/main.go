@@ -102,6 +102,10 @@ func (p *PrintBuffer) appendFloat64(data float64) {
 	p.buffer = strconv.AppendInt(p.buffer, int64(integerFraction), 10)
 }
 
+func (p *PrintBuffer) appendInt(i int64) {
+	p.buffer = strconv.AppendInt(p.buffer, i, 10)
+}
+
 func (p *PrintBuffer) appendString(str string) {
 	p.buffer = append(p.buffer, []byte(str)...)
 }
@@ -136,11 +140,18 @@ var targetEnemyId NilU64
 
 //go:wasmexport step
 func step() {
-	log("step step step")
-
 	defer func() {
 		stepCount += 1
 	}()
+
+	if stepCount%100 == 0 {
+		printBuffer.appendString("step count: ")
+		printBuffer.appendInt(int64(stepCount))
+		printBuffer.appendString(" with: ")
+		printBuffer.appendInt(int64(len(myTeam.entities)))
+		printBuffer.appendString(" entities")
+		printBuffer.sendAndReset()
+	}
 
 	turretRotation = float32(stepCount) * math.Pi / 60
 
@@ -254,7 +265,7 @@ func step() {
 				if !targetEnemyId.IsValid {
 					targetEnemyId = NilU64{
 						IsValid: true,
-						Value:   targetEnemyId.Value,
+						Value:   entityUpdate.Id(),
 					}
 				}
 			} else {
@@ -312,6 +323,8 @@ func step() {
 				fireCannon(entity.id, uint32(idx))
 				moveEntityToTarget(entity.id, entity.target.X, entity.target.Y)
 				launchMissiles(entity.id, uint32(idx))
+			}
+			if stepCount%30 == 0 {
 				printBuffer.appendString("moving to target (")
 				printBuffer.appendFloat64(float64(entity.target.X))
 				printBuffer.appendString(",")
