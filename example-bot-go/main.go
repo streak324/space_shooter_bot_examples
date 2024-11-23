@@ -48,8 +48,6 @@ type Block struct {
 
 // some code taken from https://github.com/tetratelabs/wazero/blob/1e0f88bc1462ca07a33df83004914d3af7f5bcb4/examples/allocation/tinygo/testdata/greet.go
 
-var gameStateBuffer []byte = make([]byte, 64*1024)
-
 func log(message string) {
 	ptr, size := stringToPtr(message)
 	_log(ptr, size)
@@ -115,78 +113,88 @@ func (p *PrintBuffer) sendAndReset() {
 	p.buffer = p.buffer[:0]
 }
 
-var printBuffer = &PrintBuffer{
-	buffer: make([]byte, 0, 2048),
-}
-
-var stepCount uint64 = 0
-var turretRotation float32
-
-var myTeam Team = Team{
-	entities: make(map[uint64]*Entity),
-}
-var enemyTeam Team = Team{
-	entities: make(map[uint64]*Entity),
-}
-
-var gameStateDelta *gamestate.GameStateDelta = &gamestate.GameStateDelta{}
-
 type NilU64 struct {
 	IsValid bool
 	Value   uint64
 }
 
-var targetEnemyId NilU64
+type Globals struct {
+	gameStateBuffer []byte
+	printBuffer     *PrintBuffer
+	stepCount       uint64
+	turretRotation  float32
+	myTeam          Team
+	enemyTeam       Team
+	gameStateDelta  *gamestate.GameStateDelta
+	targetEnemyId   NilU64
+}
+
+var globals = Globals{
+	gameStateBuffer: make([]byte, 64*1024),
+	printBuffer: &PrintBuffer{
+		buffer: make([]byte, 2048),
+	},
+	stepCount:      0,
+	turretRotation: 0,
+	myTeam: Team{
+		entities: make(map[uint64]*Entity),
+	},
+	enemyTeam: Team{
+		entities: make(map[uint64]*Entity),
+	},
+	gameStateDelta: &gamestate.GameStateDelta{},
+	targetEnemyId:  NilU64{},
+}
 
 //go:wasmexport step
 func step() {
 	defer func() {
-		stepCount += 1
+		globals.stepCount += 1
 	}()
 
-	if stepCount%100 == 0 {
-		printBuffer.appendString("step count: ")
-		printBuffer.appendInt(int64(stepCount))
-		printBuffer.appendString(" with: ")
-		printBuffer.appendInt(int64(len(myTeam.entities)))
-		printBuffer.appendString(" entities")
-		printBuffer.sendAndReset()
+	if globals.stepCount%100 == 0 {
+		globals.printBuffer.appendString("step count: ")
+		globals.printBuffer.appendInt(int64(globals.stepCount))
+		globals.printBuffer.appendString(" with: ")
+		globals.printBuffer.appendInt(int64(len(globals.myTeam.entities)))
+		globals.printBuffer.appendString(" entities")
+		globals.printBuffer.sendAndReset()
 	}
 
-	turretRotation = float32(stepCount) * math.Pi / 60
+	globals.turretRotation = float32(globals.stepCount) * math.Pi / 60
 
-	size := _getGameState(bytesToPtr(gameStateBuffer))
+	size := _getGameState(bytesToPtr(globals.gameStateBuffer))
 
-	if size > int32(cap(gameStateBuffer)) {
+	if size > int32(cap(globals.gameStateBuffer)) {
 		log("error on getting game state. buffer too small")
 		return
 	}
 
-	n := flatbuffers.GetUOffsetT(gameStateBuffer[flatbuffers.SizeUint32:])
-	gameStateDelta.Init(gameStateBuffer, n+flatbuffers.SizeUint32)
+	n := flatbuffers.GetUOffsetT(globals.gameStateBuffer[flatbuffers.SizeUint32:])
+	globals.gameStateDelta.Init(globals.gameStateBuffer, n+flatbuffers.SizeUint32)
 
-	myId := gameStateDelta.MyId()
+	myId := globals.gameStateDelta.MyId()
 
-	for idx := range gameStateDelta.FlagUpdatesLength() {
+	for idx := range globals.gameStateDelta.FlagUpdatesLength() {
 		var flag gamestate.Flag
-		gameStateDelta.FlagUpdates(&flag, idx)
+		globals.gameStateDelta.FlagUpdates(&flag, idx)
 
 		if flag.OwnerId() == myId {
-			myTeam.flagPos = Vec2{X: flag.X(), Y: flag.Y()}
-			if stepCount == 0 {
-				myTeam.basePos = myTeam.flagPos
+			globals.myTeam.flagPos = Vec2{X: flag.X(), Y: flag.Y()}
+			if globals.stepCount == 0 {
+				globals.myTeam.basePos = globals.myTeam.flagPos
 			}
 		} else {
-			enemyTeam.flagPos = Vec2{X: flag.X(), Y: flag.Y()}
-			if stepCount == 0 {
-				enemyTeam.basePos = enemyTeam.flagPos
+			globals.enemyTeam.flagPos = Vec2{X: flag.X(), Y: flag.Y()}
+			if globals.stepCount == 0 {
+				globals.enemyTeam.basePos = globals.enemyTeam.flagPos
 			}
 		}
 	}
 
-	for idx := range gameStateDelta.NewEntitiesLength() {
+	for idx := range globals.gameStateDelta.NewEntitiesLength() {
 		var entity gamestate.Entity
-		gameStateDelta.NewEntities(&entity, idx)
+		globals.gameStateDelta.NewEntities(&entity, idx)
 
 		if !entity.IsCommandable() {
 			continue
@@ -200,7 +208,7 @@ func step() {
 		posY := float32(position.Y())
 
 		entityType := EntityTypeShip
-		if stepCount > 0 {
+		if globals.stepCount > 0 {
 			entityType = EntityTypeMinion
 		}
 
@@ -227,110 +235,110 @@ func step() {
 		}
 		if isMine {
 			ent.target = Vec2{-posX, posY}
-			if len(myTeam.entities) == 0 {
-				ent.target = enemyTeam.basePos
+			if len(globals.myTeam.entities) == 0 {
+				ent.target = globals.enemyTeam.basePos
 			}
-			myTeam.entities[id] = ent
+			globals.myTeam.entities[id] = ent
 
 		} else {
-			enemyTeam.entities[id] = ent
+			globals.enemyTeam.entities[id] = ent
 		}
 	}
 
-	for idx := range gameStateDelta.EntityUpdatesLength() {
+	for idx := range globals.gameStateDelta.EntityUpdatesLength() {
 		var entityUpdate gamestate.EntityUpdate
-		gameStateDelta.EntityUpdates(&entityUpdate, idx)
+		globals.gameStateDelta.EntityUpdates(&entityUpdate, idx)
 		var position gamestate.Vec2
 		entityUpdate.Position(&position)
 		id := entityUpdate.Id()
 		posX := float32(position.X())
 		posY := float32(position.Y())
 
-		_, isMine := myTeam.entities[entityUpdate.Id()]
-		_, isEnemy := enemyTeam.entities[entityUpdate.Id()]
+		_, isMine := globals.myTeam.entities[entityUpdate.Id()]
+		_, isEnemy := globals.enemyTeam.entities[entityUpdate.Id()]
 
 		if isMine {
 			if entityUpdate.IsCommandable() {
-				myTeam.entities[entityUpdate.Id()].pos = Vec2{X: posX, Y: posY}
-				myTeam.entities[entityUpdate.Id()].rotation = entityUpdate.Rotation()
+				globals.myTeam.entities[entityUpdate.Id()].pos = Vec2{X: posX, Y: posY}
+				globals.myTeam.entities[entityUpdate.Id()].rotation = entityUpdate.Rotation()
 			} else {
-				delete(myTeam.entities, id)
+				delete(globals.myTeam.entities, id)
 			}
 		}
 
 		if isEnemy {
 			if entityUpdate.IsCommandable() {
-				enemyTeam.entities[entityUpdate.Id()].pos = Vec2{X: posX, Y: posY}
-				enemyTeam.entities[entityUpdate.Id()].rotation = entityUpdate.Rotation()
-				if !targetEnemyId.IsValid {
-					targetEnemyId = NilU64{
+				globals.enemyTeam.entities[entityUpdate.Id()].pos = Vec2{X: posX, Y: posY}
+				globals.enemyTeam.entities[entityUpdate.Id()].rotation = entityUpdate.Rotation()
+				if !globals.targetEnemyId.IsValid {
+					globals.targetEnemyId = NilU64{
 						IsValid: true,
 						Value:   entityUpdate.Id(),
 					}
 				}
 			} else {
-				delete(enemyTeam.entities, id)
-				if targetEnemyId.IsValid && targetEnemyId.Value == id {
-					targetEnemyId.IsValid = false
+				delete(globals.enemyTeam.entities, id)
+				if globals.targetEnemyId.IsValid && globals.targetEnemyId.Value == id {
+					globals.targetEnemyId.IsValid = false
 				}
 			}
 		}
 	}
 
-	for idx := range gameStateDelta.SingleBlockEntityUpdatesLength() {
+	for idx := range globals.gameStateDelta.SingleBlockEntityUpdatesLength() {
 		var entityUpdate gamestate.SingleBlockEntityUpdate
-		gameStateDelta.SingleBlockEntityUpdates(&entityUpdate, idx)
+		globals.gameStateDelta.SingleBlockEntityUpdates(&entityUpdate, idx)
 		var position gamestate.Vec2
 		entityUpdate.Position(&position)
 
-		_, isEnemy := myTeam.entities[entityUpdate.Id()]
-		_, isMine := enemyTeam.entities[entityUpdate.Id()]
+		_, isMine := globals.myTeam.entities[entityUpdate.Id()]
+		_, isEnemy := globals.enemyTeam.entities[entityUpdate.Id()]
 
 		if isMine {
-			myTeam.entities[entityUpdate.Id()].pos = Vec2{X: position.X(), Y: position.Y()}
-			myTeam.entities[entityUpdate.Id()].rotation = entityUpdate.Rotation()
+			globals.myTeam.entities[entityUpdate.Id()].pos = Vec2{X: position.X(), Y: position.Y()}
+			globals.myTeam.entities[entityUpdate.Id()].rotation = entityUpdate.Rotation()
 		}
 
 		if isEnemy {
-			enemyTeam.entities[entityUpdate.Id()].pos = Vec2{X: position.X(), Y: position.Y()}
-			enemyTeam.entities[entityUpdate.Id()].rotation = entityUpdate.Rotation()
+			globals.enemyTeam.entities[entityUpdate.Id()].pos = Vec2{X: position.X(), Y: position.Y()}
+			globals.enemyTeam.entities[entityUpdate.Id()].rotation = entityUpdate.Rotation()
 		}
 
 	}
 
-	for idx := range gameStateDelta.DeadEntitiesLength() {
-		deadEntityId := gameStateDelta.DeadEntities(idx)
-		delete(enemyTeam.entities, deadEntityId)
-		delete(myTeam.entities, deadEntityId)
+	for idx := range globals.gameStateDelta.DeadEntitiesLength() {
+		deadEntityId := globals.gameStateDelta.DeadEntities(idx)
+		delete(globals.enemyTeam.entities, deadEntityId)
+		delete(globals.myTeam.entities, deadEntityId)
 	}
 
-	for _, entity := range myTeam.entities {
+	for _, entity := range globals.myTeam.entities {
 		switch entity.entityType {
 		case EntityTypeMinion:
-			if targetEnemyId.IsValid {
-				enemy, ok := enemyTeam.entities[targetEnemyId.Value]
+			if globals.targetEnemyId.IsValid {
+				enemy, ok := globals.enemyTeam.entities[globals.targetEnemyId.Value]
 				if ok {
 					aimTurret(entity.id, 0, enemy.pos.X, enemy.pos.Y)
 					fireCannon(entity.id, 0)
 					moveEntityToTarget(entity.id, enemy.pos.X, enemy.pos.Y)
 				} else {
-					targetEnemyId.IsValid = false
+					globals.targetEnemyId.IsValid = false
 				}
 			}
 		case EntityTypeShip:
 			for idx := range entity.blocks {
-				orientTurret(entity.id, uint32(idx), turretRotation)
+				orientTurret(entity.id, uint32(idx), globals.turretRotation)
 				fireCannon(entity.id, uint32(idx))
 				moveEntityToTarget(entity.id, entity.target.X, entity.target.Y)
 				launchMissiles(entity.id, uint32(idx))
 			}
-			if stepCount%30 == 0 {
-				printBuffer.appendString("moving to target (")
-				printBuffer.appendFloat64(float64(entity.target.X))
-				printBuffer.appendString(",")
-				printBuffer.appendFloat64(float64(entity.target.Y))
-				printBuffer.appendString(")")
-				printBuffer.sendAndReset()
+			if globals.stepCount%30 == 0 {
+				globals.printBuffer.appendString("moving to target (")
+				globals.printBuffer.appendFloat64(float64(entity.target.X))
+				globals.printBuffer.appendString(",")
+				globals.printBuffer.appendFloat64(float64(entity.target.Y))
+				globals.printBuffer.appendString(")")
+				globals.printBuffer.sendAndReset()
 			}
 		}
 	}
