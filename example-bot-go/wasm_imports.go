@@ -47,4 +47,7 @@ func launchMissiles(entityId uint64, blockIndex uint32) int32
 // command entity with id `entityId` to aim turret on block index `blockIndex` at position x and y
 //
 //go:wasmimport env botsAimTurret
-func aimTurret(entityId uint64, bockIndex uint32, x float32, y float32) int32
+func aimTurret(entityId uint64, blockIndex uint32, x float32, y float32) int32
+
+//go:wasmimport env botsGrabFlag
+func grabFlag(entityId uint64) int32

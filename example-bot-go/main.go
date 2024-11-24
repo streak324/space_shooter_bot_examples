@@ -15,10 +15,12 @@ type Vec2 struct {
 }
 
 type Team struct {
-	ownerID  byte
-	basePos  Vec2
-	flagPos  Vec2
-	entities map[uint64]*Entity
+	ownerID       byte
+	basePos       Vec2
+	flagPos       Vec2
+	entities      map[uint64]*Entity
+	isFlagStolen  bool
+	flagStealerId uint64
 }
 
 type EntityType int
@@ -132,7 +134,7 @@ type Globals struct {
 var globals = Globals{
 	gameStateBuffer: make([]byte, 64*1024),
 	printBuffer: &PrintBuffer{
-		buffer: make([]byte, 2048),
+		buffer: make([]byte, 0, 2048),
 	},
 	stepCount:      0,
 	turretRotation: 0,
@@ -144,6 +146,15 @@ var globals = Globals{
 	},
 	gameStateDelta: &gamestate.GameStateDelta{},
 	targetEnemyId:  NilU64{},
+}
+
+func updateFlagSituation(stepCount uint64, team *Team, flag *gamestate.Flag) {
+	team.flagPos = Vec2{X: flag.X(), Y: flag.Y()}
+	if stepCount == 0 {
+		team.basePos = team.flagPos
+	}
+	team.isFlagStolen = flag.IsCarried()
+	team.flagStealerId = flag.CarrierId()
 }
 
 //go:wasmexport step
@@ -178,17 +189,10 @@ func step() {
 	for idx := range globals.gameStateDelta.FlagUpdatesLength() {
 		var flag gamestate.Flag
 		globals.gameStateDelta.FlagUpdates(&flag, idx)
-
 		if flag.OwnerId() == myId {
-			globals.myTeam.flagPos = Vec2{X: flag.X(), Y: flag.Y()}
-			if globals.stepCount == 0 {
-				globals.myTeam.basePos = globals.myTeam.flagPos
-			}
+			updateFlagSituation(globals.stepCount, &globals.myTeam, &flag)
 		} else {
-			globals.enemyTeam.flagPos = Vec2{X: flag.X(), Y: flag.Y()}
-			if globals.stepCount == 0 {
-				globals.enemyTeam.basePos = globals.enemyTeam.flagPos
-			}
+			updateFlagSituation(globals.stepCount, &globals.enemyTeam, &flag)
 		}
 	}
 
@@ -339,6 +343,13 @@ func step() {
 				globals.printBuffer.appendFloat64(float64(entity.target.Y))
 				globals.printBuffer.appendString(")")
 				globals.printBuffer.sendAndReset()
+			}
+
+			if globals.enemyTeam.isFlagStolen && globals.enemyTeam.flagStealerId == entity.id {
+				entity.target = globals.myTeam.basePos
+			} else {
+				entity.target = globals.enemyTeam.flagPos
+				grabFlag(entity.id)
 			}
 		}
 	}
