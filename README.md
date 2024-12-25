@@ -43,6 +43,11 @@ Below is a list of functions provided by the WASM Game Host that your bot can im
   - returns id of the input for result inspection in the next time step
 - botsApplyImpulse(entityId u64, block_index: u32, impulse: f32) -> i32
   - attempts to apply impul
+- botsFindPath(entityId u64, start_x: f32, start_y: f32, goal_x: f32, goal_y: f32, ptr: u32, capacity: u32) -> u32
+  - attempts to find a path from start to goal.
+  - writes the path into the buffer `ptr` as a flatbuffer table with a `waypoints` field.
+  - returns the byte size of the encoded path. assume the write failed if buffer `capacity` is smaller than the encoded path
+
 
 ## Notes
 - Adjust your wasm toolchains to avoid generating imports for "GOT.mem", "GOT.func", "__stack_pointer", "__memory_base", "__table_base ". Those are not well supported in the wasm host. Use the toolchain configuration in the examples

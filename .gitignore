@@ -10,6 +10,7 @@
 *.wasm
 *.wat
 *.objdump
+*.wasm.map
 
 build-custom.sh
 

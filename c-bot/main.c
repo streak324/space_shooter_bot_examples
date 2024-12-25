@@ -25,6 +25,7 @@ i32 botsMoveEntityToTarget(u64 entity_id, f32 x, f32 y) EM_IMPORT(botsMoveEntity
 i32 botsAimTurret(u64 entity_id, i32 block_index, f32 x, f32 y) EM_IMPORT(botsAimTurret);
 i32 botsFireCannon(u64 entity_id, i32 block_index) EM_IMPORT(botsFireCannon);
 u32 botsFindPath(f32 start_x, f32 start_y, f32 goal_x, f32 goal_y, void *buffer_ptr, u32 capacity) EM_IMPORT(botsFindPath);
+i32 botsGrabFlag(u64 entityId) EM_IMPORT(botsGrabFlag);
 
 typedef struct {
 	i8* ptr;
@@ -248,6 +249,7 @@ EMSCRIPTEN_KEEPALIVE void step()
 			for (block_idx = 0; block_idx < my_team.num_blocks_in_entity; block_idx++) {
 				botsAimTurret(entity_id, block_idx, enemy_position.x, enemy_position.y);
 				botsFireCannon(entity_id, block_idx);
+				botsGrabFlag(entity_id);
 			}
 		}
 
