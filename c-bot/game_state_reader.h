@@ -81,10 +81,6 @@ typedef const struct Flag_table *Flag_table_t;
 typedef struct Flag_table *Flag_mutable_table_t;
 typedef const flatbuffers_uoffset_t *Flag_vec_t;
 typedef flatbuffers_uoffset_t *Flag_mutable_vec_t;
-typedef const struct GameState_table *GameState_table_t;
-typedef struct GameState_table *GameState_mutable_table_t;
-typedef const flatbuffers_uoffset_t *GameState_vec_t;
-typedef flatbuffers_uoffset_t *GameState_mutable_vec_t;
 typedef const struct EntityUpdate_table *EntityUpdate_table_t;
 typedef struct EntityUpdate_table *EntityUpdate_mutable_table_t;
 typedef const flatbuffers_uoffset_t *EntityUpdate_vec_t;
@@ -97,6 +93,10 @@ typedef const struct GameStateDelta_table *GameStateDelta_table_t;
 typedef struct GameStateDelta_table *GameStateDelta_mutable_table_t;
 typedef const flatbuffers_uoffset_t *GameStateDelta_vec_t;
 typedef flatbuffers_uoffset_t *GameStateDelta_mutable_vec_t;
+typedef const struct Path_table *Path_table_t;
+typedef struct Path_table *Path_mutable_table_t;
+typedef const flatbuffers_uoffset_t *Path_vec_t;
+typedef flatbuffers_uoffset_t *Path_mutable_vec_t;
 #ifndef Vec2_file_identifier
 #define Vec2_file_identifier 0
 #endif
@@ -205,18 +205,6 @@ typedef flatbuffers_uoffset_t *GameStateDelta_mutable_vec_t;
 #ifndef Flag_file_extension
 #define Flag_file_extension "bin"
 #endif
-#ifndef GameState_file_identifier
-#define GameState_file_identifier 0
-#endif
-/* deprecated, use GameState_file_identifier */
-#ifndef GameState_identifier
-#define GameState_identifier 0
-#endif
-#define GameState_type_hash ((flatbuffers_thash_t)0x392e5808)
-#define GameState_type_identifier "\x08\x58\x2e\x39"
-#ifndef GameState_file_extension
-#define GameState_file_extension "bin"
-#endif
 #ifndef BlockHitUpdate_file_identifier
 #define BlockHitUpdate_file_identifier 0
 #endif
@@ -312,6 +300,18 @@ typedef flatbuffers_uoffset_t *GameStateDelta_mutable_vec_t;
 #define GameStateDelta_type_identifier "\x8e\x18\xc9\xdc"
 #ifndef GameStateDelta_file_extension
 #define GameStateDelta_file_extension "bin"
+#endif
+#ifndef Path_file_identifier
+#define Path_file_identifier 0
+#endif
+/* deprecated, use Path_file_identifier */
+#ifndef Path_identifier
+#define Path_identifier 0
+#endif
+#define Path_type_hash ((flatbuffers_thash_t)0xeb66e456)
+#define Path_type_identifier "\x56\xe4\x66\xeb"
+#ifndef Path_file_extension
+#define Path_file_extension "bin"
 #endif
 
 
@@ -500,14 +500,13 @@ __flatbuffers_offset_vec_at(Entity_table_t, vec, i, 0)
 __flatbuffers_table_as_root(Entity)
 
 __flatbuffers_define_scalar_field(0, Entity, id, flatbuffers_uint64, uint64_t, UINT64_C(0))
-__flatbuffers_define_scalar_field(1, Entity, my, flatbuffers_bool, flatbuffers_bool_t, UINT8_C(0))
+__flatbuffers_define_scalar_field(1, Entity, owner, flatbuffers_uint8, uint8_t, UINT8_C(0))
 __flatbuffers_define_scalar_field(2, Entity, is_commandable, flatbuffers_bool, flatbuffers_bool_t, UINT8_C(0))
 __flatbuffers_define_struct_field(3, Entity, position, Vec2_struct_t, 0)
 __flatbuffers_define_struct_field(4, Entity, linear_velocity, Vec2_struct_t, 0)
-__flatbuffers_define_scalar_field(5, Entity, owner, flatbuffers_uint8, uint8_t, UINT8_C(0))
-__flatbuffers_define_scalar_field(6, Entity, rotation, flatbuffers_float, float, 0.00000000f)
-__flatbuffers_define_scalar_field(7, Entity, angular_velocity, flatbuffers_float, float, 0.00000000f)
-__flatbuffers_define_vector_field(8, Entity, blocks, Block_vec_t, 0)
+__flatbuffers_define_scalar_field(5, Entity, rotation, flatbuffers_float, float, 0.00000000f)
+__flatbuffers_define_scalar_field(6, Entity, angular_velocity, flatbuffers_float, float, 0.00000000f)
+__flatbuffers_define_vector_field(7, Entity, blocks, Block_vec_t, 0)
 
 struct Projectile_table { uint8_t unused__; };
 
@@ -518,7 +517,7 @@ __flatbuffers_offset_vec_at(Projectile_table_t, vec, i, 0)
 __flatbuffers_table_as_root(Projectile)
 
 __flatbuffers_define_scalar_field(0, Projectile, id, flatbuffers_uint64, uint64_t, UINT64_C(0))
-__flatbuffers_define_scalar_field(1, Projectile, my, flatbuffers_bool, flatbuffers_bool_t, UINT8_C(0))
+__flatbuffers_define_scalar_field(1, Projectile, owner, flatbuffers_uint8, uint8_t, UINT8_C(0))
 __flatbuffers_define_struct_field(2, Projectile, position, Vec2_struct_t, 0)
 __flatbuffers_define_struct_field(3, Projectile, linear_velocity, Vec2_struct_t, 0)
 __flatbuffers_define_scalar_field(4, Projectile, damage, flatbuffers_float, float, 0.00000000f)
@@ -549,22 +548,6 @@ __flatbuffers_define_scalar_field(1, Flag, x, flatbuffers_float, float, 0.000000
 __flatbuffers_define_scalar_field(2, Flag, y, flatbuffers_float, float, 0.00000000f)
 __flatbuffers_define_scalar_field(3, Flag, is_carried, flatbuffers_bool, flatbuffers_bool_t, UINT8_C(0))
 __flatbuffers_define_scalar_field(4, Flag, carrier_id, flatbuffers_uint64, uint64_t, UINT64_C(0))
-
-struct GameState_table { uint8_t unused__; };
-
-static inline size_t GameState_vec_len(GameState_vec_t vec)
-__flatbuffers_vec_len(vec)
-static inline GameState_table_t GameState_vec_at(GameState_vec_t vec, size_t i)
-__flatbuffers_offset_vec_at(GameState_table_t, vec, i, 0)
-__flatbuffers_table_as_root(GameState)
-
-__flatbuffers_define_vector_field(0, GameState, flags, Flag_vec_t, 0)
-__flatbuffers_define_vector_field(1, GameState, entities, Entity_vec_t, 0)
-__flatbuffers_define_vector_field(2, GameState, new_projectiles, Projectile_vec_t, 0)
-__flatbuffers_define_vector_field(3, GameState, dead_projectiles, DeadProjectile_vec_t, 0)
-__flatbuffers_define_vector_field(4, GameState, explosions, Explosion_vec_t, 0)
-__flatbuffers_define_scalar_field(5, GameState, my_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
-__flatbuffers_define_scalar_field(6, GameState, winner_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
 
 struct EntityUpdate_table { uint8_t unused__; };
 
@@ -599,6 +582,7 @@ __flatbuffers_define_struct_field(2, SingleBlockEntityUpdate, linear_velocity, V
 __flatbuffers_define_scalar_field(3, SingleBlockEntityUpdate, rotation, flatbuffers_float, float, 0.00000000f)
 __flatbuffers_define_scalar_field(4, SingleBlockEntityUpdate, hitpoints, flatbuffers_float, float, 0.00000000f)
 __flatbuffers_define_scalar_field(5, SingleBlockEntityUpdate, turret_rotation, flatbuffers_float, float, 0.00000000f)
+__flatbuffers_define_scalar_field(6, SingleBlockEntityUpdate, applied_thrust, flatbuffers_float, float, 0.00000000f)
 
 struct GameStateDelta_table { uint8_t unused__; };
 
@@ -618,6 +602,16 @@ __flatbuffers_define_vector_field(6, GameStateDelta, dead_projectiles, DeadProje
 __flatbuffers_define_vector_field(7, GameStateDelta, explosions, Explosion_vec_t, 0)
 __flatbuffers_define_scalar_field(8, GameStateDelta, my_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
 __flatbuffers_define_scalar_field(9, GameStateDelta, winner_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
+
+struct Path_table { uint8_t unused__; };
+
+static inline size_t Path_vec_len(Path_vec_t vec)
+__flatbuffers_vec_len(vec)
+static inline Path_table_t Path_vec_at(Path_vec_t vec, size_t i)
+__flatbuffers_offset_vec_at(Path_table_t, vec, i, 0)
+__flatbuffers_table_as_root(Path)
+
+__flatbuffers_define_vector_field(0, Path, waypoints, Vec2_vec_t, 0)
 
 
 #include "flatcc/flatcc_epilogue.h"

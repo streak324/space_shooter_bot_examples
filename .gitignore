@@ -12,3 +12,5 @@
 *.objdump
 
 build-custom.sh
+
+.vscode
