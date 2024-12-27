@@ -26,6 +26,10 @@ i32 botsAimTurret(u64 entity_id, i32 block_index, f32 x, f32 y) EM_IMPORT(botsAi
 i32 botsFireCannon(u64 entity_id, i32 block_index) EM_IMPORT(botsFireCannon);
 u32 botsFindPath(f32 start_x, f32 start_y, f32 goal_x, f32 goal_y, void *buffer_ptr, u32 capacity) EM_IMPORT(botsFindPath);
 i32 botsGrabFlag(u64 entityId) EM_IMPORT(botsGrabFlag);
+void botsDrawText(void* buffer_ptr, u32 length, f32 x, f32 y, f32 size, u32 color) EM_IMPORT(botsDrawText);
+void botsDrawLine(f32 x1, f32 y1, f32 x2, f32 y2, f32 width, u32 color) EM_IMPORT(botsDrawLine);
+void botsDrawRectangle(f32 x, f32 y, f32 width, f32 height, u32 color) EM_IMPORT(botsDrawRectangle);
+void botsDrawCircle(f32 x, f32 y, f32 radius, u32 color) EM_IMPORT(botsDrawCircle);
 
 typedef struct {
 	i8* ptr;
@@ -136,6 +140,10 @@ static Vec enemy_position = {};
 
 EMSCRIPTEN_KEEPALIVE void step()
 {
+	botsDrawText("im with stupid", sizeof("im with stupid"), 100.0f, 100.0f, 20.0f, 0xFF00FF00);
+	botsDrawLine(0.0f, 0.0f, 100.0f, 100.0f, 5.0f, 0xffFF0000);
+	botsDrawRectangle(50.0f, 200.0f, 100.0f, 100.0f, 0x7f0000FF);
+	botsDrawCircle(300.0f, 300.0f, 50.0f, 0xffFFFF00);
 	if (step_count == 0) {
 		const i32 game_state_buffer_capacity = 64 * 1024;
 		game_state_buffer.ptr = (i8*) malloc(game_state_buffer_capacity);

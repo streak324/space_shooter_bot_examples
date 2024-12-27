@@ -47,7 +47,12 @@ Below is a list of functions provided by the WASM Game Host that your bot can im
   - attempts to find a path from start to goal.
   - writes the path into the buffer `ptr` as a flatbuffer table with a `waypoints` field.
   - returns the byte size of the encoded path. assume the write failed if buffer `capacity` is smaller than the encoded path
+- botsDrawText(text_ptr: u32, text_len: u32, x: f32, y: f32, size: f32, color: u32)
+- botsDrawRect(x: f32, y: f32, width: f32, height: f32, color: u32)
+- botsDrawLine(x1: f32, y1: f32, x2: f32, y2: f32, thickness: f32, color: u32)
+- botsDrawCircle(x: f32, y: f32, radius: f32, color: u32)
 
 
 ## Notes
 - Adjust your wasm toolchains to avoid generating imports for "GOT.mem", "GOT.func", "__stack_pointer", "__memory_base", "__table_base ". Those are not well supported in the wasm host. Use the toolchain configuration in the examples
+- color parameters are in hexadecimal AARRGGBB format.
