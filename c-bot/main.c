@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdarg.h>
+#include <string.h>
 
 typedef int8_t i8;
 typedef int32_t i32;
@@ -140,7 +141,7 @@ static Vec enemy_position = {};
 
 EMSCRIPTEN_KEEPALIVE void step()
 {
-	botsDrawText("im with stupid", sizeof("im with stupid"), 100.0f, 100.0f, 20.0f, 0xFF00FF00);
+	botsDrawText("im with stupid", strlen("im with stupid"), 100.0f, 100.0f, 20.0f, 0xFF00FF00);
 	botsDrawLine(0.0f, 0.0f, 100.0f, 100.0f, 5.0f, 0xffFF0000);
 	botsDrawRectangle(50.0f, 200.0f, 100.0f, 100.0f, 0x7f0000FF);
 	botsDrawCircle(300.0f, 300.0f, 50.0f, 0xffFFFF00);
@@ -185,8 +186,10 @@ EMSCRIPTEN_KEEPALIVE void step()
 		}
 		if (owner_id == my_id) {
 			my_team.flag = (Vec) {x, y};
+			my_team.is_flag_taken = Flag_is_carried_get(flag);
 		} else {
 			enemy_team.flag = (Vec) {x, y};
+			enemy_team.is_flag_taken = Flag_is_carried_get(flag);
 		}
 	}
 
@@ -226,9 +229,12 @@ EMSCRIPTEN_KEEPALIVE void step()
 			if (enemy_team.is_flag_taken) {
 				path_byte_size = botsFindPath(
 					Vec2_x_get(position), Vec2_y_get(position), my_team.base.x, my_team.base.y, (void *) path_find_buffer.ptr, path_find_buffer.capacity);
+				const char* message = "catpuring flag\0";
+				botsDrawText("going to my base", strlen("going to my base"), 0.0f, 0.0f, 20.0f, 0xFF00FF00);
 			} else {
 				path_byte_size = botsFindPath(
 					Vec2_x_get(position), Vec2_y_get(position), enemy_team.flag.x, enemy_team.flag.y, (void *) path_find_buffer.ptr, path_find_buffer.capacity);
+				botsDrawText("going to enemy flag", strlen("going to enemy flag"), 0.0f, 0.0f, 20.0f, 0xFF00FF00);
 			}
 
 			if (path_byte_size > 0) {
