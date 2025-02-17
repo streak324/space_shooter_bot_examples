@@ -20,6 +20,9 @@ func _log(ptr, size uint32)
 //go:wasmimport env botsGetGameState
 func _getGameState(ptr uint32, capacity uint32) int32
 
+//go:wasmimport env botsGetGameStartingParams
+func getGameStartingParams(ptr uint32, capacity uint32) uint32
+
 // command entity with id `entityId` to move to position `x`, `y`
 //
 // returns counter that can be used in the next tick on whether the action was taken or not.

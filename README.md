@@ -8,16 +8,18 @@ Below is a list of functions provided by the WASM Game Host that your bot can im
   - ptr -> pointer address to the buffer containing the message
   - len -> length of message in bytes. 
   - Use UTF8 encoding.
-- getGameState(ptr i32, capacity i32) -> i32
+- botsGetGameState(ptr u32, capacity u32) -> u32
   - ptr -> pointer address to a buffer where the flatbuffer encoded game state will be written to
   - capacity -> how many bytes the buffer can be written to
   - returns number of bytes of the game state. assume error if buffer capacity is smaller
-- moveEntityToTarget(entityId u64, x f32, y f32) -> i32
+- botsGetGameStartingParams(ptr u32, capacity u32) -> u32
+  - function signature and purpose of each parameter is same as botsGetGameState, except this func retrieves the game starting parameters.
+- botsMoveEntityToTarget(entityId u64, x f32, y f32) -> i32
   - entityId -> the id of the entity you want to move
   - x -> a 32 bit floating point in the x dimension you want the entity to be in
   - y -> a 32 bit floating point in the y dimension you want the entity to be in
   - returns id of the input for result inspection in the next time step
-- orientTurret(entityId u64, blockIndex i32, rotation f32) -> i32
+- botsOrientTurret(entityId u64, blockIndex i32, rotation f32) -> i32
   - entityId -> the id of the entity you want to command
   - blockIndex -> the block index of the entity containing the turret you want to orient
   - rotation -> where you want the turret to be rotated to. NOTE: rotation is relative to the entity, not to the world.

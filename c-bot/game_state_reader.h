@@ -89,10 +89,22 @@ typedef const struct SingleBlockEntityUpdate_table *SingleBlockEntityUpdate_tabl
 typedef struct SingleBlockEntityUpdate_table *SingleBlockEntityUpdate_mutable_table_t;
 typedef const flatbuffers_uoffset_t *SingleBlockEntityUpdate_vec_t;
 typedef flatbuffers_uoffset_t *SingleBlockEntityUpdate_mutable_vec_t;
+typedef const struct RegularConvexPolygon_table *RegularConvexPolygon_table_t;
+typedef struct RegularConvexPolygon_table *RegularConvexPolygon_mutable_table_t;
+typedef const flatbuffers_uoffset_t *RegularConvexPolygon_vec_t;
+typedef flatbuffers_uoffset_t *RegularConvexPolygon_mutable_vec_t;
+typedef const struct GameStartingParams_table *GameStartingParams_table_t;
+typedef struct GameStartingParams_table *GameStartingParams_mutable_table_t;
+typedef const flatbuffers_uoffset_t *GameStartingParams_vec_t;
+typedef flatbuffers_uoffset_t *GameStartingParams_mutable_vec_t;
 typedef const struct GameStateDelta_table *GameStateDelta_table_t;
 typedef struct GameStateDelta_table *GameStateDelta_mutable_table_t;
 typedef const flatbuffers_uoffset_t *GameStateDelta_vec_t;
 typedef flatbuffers_uoffset_t *GameStateDelta_mutable_vec_t;
+typedef const struct EndGame_table *EndGame_table_t;
+typedef struct EndGame_table *EndGame_mutable_table_t;
+typedef const flatbuffers_uoffset_t *EndGame_vec_t;
+typedef flatbuffers_uoffset_t *EndGame_mutable_vec_t;
 typedef const struct Path_table *Path_table_t;
 typedef struct Path_table *Path_mutable_table_t;
 typedef const flatbuffers_uoffset_t *Path_vec_t;
@@ -289,6 +301,30 @@ typedef flatbuffers_uoffset_t *Path_mutable_vec_t;
 #ifndef SingleBlockEntityUpdate_file_extension
 #define SingleBlockEntityUpdate_file_extension "bin"
 #endif
+#ifndef RegularConvexPolygon_file_identifier
+#define RegularConvexPolygon_file_identifier 0
+#endif
+/* deprecated, use RegularConvexPolygon_file_identifier */
+#ifndef RegularConvexPolygon_identifier
+#define RegularConvexPolygon_identifier 0
+#endif
+#define RegularConvexPolygon_type_hash ((flatbuffers_thash_t)0x989dd7da)
+#define RegularConvexPolygon_type_identifier "\xda\xd7\x9d\x98"
+#ifndef RegularConvexPolygon_file_extension
+#define RegularConvexPolygon_file_extension "bin"
+#endif
+#ifndef GameStartingParams_file_identifier
+#define GameStartingParams_file_identifier 0
+#endif
+/* deprecated, use GameStartingParams_file_identifier */
+#ifndef GameStartingParams_identifier
+#define GameStartingParams_identifier 0
+#endif
+#define GameStartingParams_type_hash ((flatbuffers_thash_t)0x78448619)
+#define GameStartingParams_type_identifier "\x19\x86\x44\x78"
+#ifndef GameStartingParams_file_extension
+#define GameStartingParams_file_extension "bin"
+#endif
 #ifndef GameStateDelta_file_identifier
 #define GameStateDelta_file_identifier 0
 #endif
@@ -300,6 +336,18 @@ typedef flatbuffers_uoffset_t *Path_mutable_vec_t;
 #define GameStateDelta_type_identifier "\x8e\x18\xc9\xdc"
 #ifndef GameStateDelta_file_extension
 #define GameStateDelta_file_extension "bin"
+#endif
+#ifndef EndGame_file_identifier
+#define EndGame_file_identifier 0
+#endif
+/* deprecated, use EndGame_file_identifier */
+#ifndef EndGame_identifier
+#define EndGame_identifier 0
+#endif
+#define EndGame_type_hash ((flatbuffers_thash_t)0x211964a8)
+#define EndGame_type_identifier "\xa8\x64\x19\x21"
+#ifndef EndGame_file_extension
+#define EndGame_file_extension "bin"
 #endif
 #ifndef Path_file_identifier
 #define Path_file_identifier 0
@@ -500,7 +548,7 @@ __flatbuffers_offset_vec_at(Entity_table_t, vec, i, 0)
 __flatbuffers_table_as_root(Entity)
 
 __flatbuffers_define_scalar_field(0, Entity, id, flatbuffers_uint64, uint64_t, UINT64_C(0))
-__flatbuffers_define_scalar_field(1, Entity, owner, flatbuffers_uint8, uint8_t, UINT8_C(0))
+__flatbuffers_define_scalar_field(1, Entity, owner_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
 __flatbuffers_define_scalar_field(2, Entity, is_commandable, flatbuffers_bool, flatbuffers_bool_t, UINT8_C(0))
 __flatbuffers_define_struct_field(3, Entity, position, Vec2_struct_t, 0)
 __flatbuffers_define_struct_field(4, Entity, linear_velocity, Vec2_struct_t, 0)
@@ -517,7 +565,7 @@ __flatbuffers_offset_vec_at(Projectile_table_t, vec, i, 0)
 __flatbuffers_table_as_root(Projectile)
 
 __flatbuffers_define_scalar_field(0, Projectile, id, flatbuffers_uint64, uint64_t, UINT64_C(0))
-__flatbuffers_define_scalar_field(1, Projectile, owner, flatbuffers_uint8, uint8_t, UINT8_C(0))
+__flatbuffers_define_scalar_field(1, Projectile, owner_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
 __flatbuffers_define_struct_field(2, Projectile, position, Vec2_struct_t, 0)
 __flatbuffers_define_struct_field(3, Projectile, linear_velocity, Vec2_struct_t, 0)
 __flatbuffers_define_scalar_field(4, Projectile, damage, flatbuffers_float, float, 0.00000000f)
@@ -584,6 +632,54 @@ __flatbuffers_define_scalar_field(4, SingleBlockEntityUpdate, hitpoints, flatbuf
 __flatbuffers_define_scalar_field(5, SingleBlockEntityUpdate, turret_rotation, flatbuffers_float, float, 0.00000000f)
 __flatbuffers_define_scalar_field(6, SingleBlockEntityUpdate, applied_thrust, flatbuffers_float, float, 0.00000000f)
 
+struct RegularConvexPolygon_table { uint8_t unused__; };
+
+static inline size_t RegularConvexPolygon_vec_len(RegularConvexPolygon_vec_t vec)
+__flatbuffers_vec_len(vec)
+static inline RegularConvexPolygon_table_t RegularConvexPolygon_vec_at(RegularConvexPolygon_vec_t vec, size_t i)
+__flatbuffers_offset_vec_at(RegularConvexPolygon_table_t, vec, i, 0)
+__flatbuffers_table_as_root(RegularConvexPolygon)
+
+__flatbuffers_define_scalar_field(0, RegularConvexPolygon, radius, flatbuffers_float, float, 0.00000000f)
+__flatbuffers_define_scalar_field(1, RegularConvexPolygon, num_sides, flatbuffers_uint32, uint32_t, UINT32_C(0))
+typedef uint8_t ArenaBounds_union_type_t;
+__flatbuffers_define_integer_type(ArenaBounds, ArenaBounds_union_type_t, 8)
+__flatbuffers_define_union(flatbuffers_, ArenaBounds)
+#define ArenaBounds_NONE ((ArenaBounds_union_type_t)UINT8_C(0))
+#define ArenaBounds_regular_convex_polygon ((ArenaBounds_union_type_t)UINT8_C(1))
+
+static inline const char *ArenaBounds_type_name(ArenaBounds_union_type_t type)
+{
+    switch (type) {
+    case ArenaBounds_NONE: return "NONE";
+    case ArenaBounds_regular_convex_polygon: return "regular_convex_polygon";
+    default: return "";
+    }
+}
+
+static inline int ArenaBounds_is_known_type(ArenaBounds_union_type_t type)
+{
+    switch (type) {
+    case ArenaBounds_NONE: return 1;
+    case ArenaBounds_regular_convex_polygon: return 1;
+    default: return 0;
+    }
+}
+
+
+struct GameStartingParams_table { uint8_t unused__; };
+
+static inline size_t GameStartingParams_vec_len(GameStartingParams_vec_t vec)
+__flatbuffers_vec_len(vec)
+static inline GameStartingParams_table_t GameStartingParams_vec_at(GameStartingParams_vec_t vec, size_t i)
+__flatbuffers_offset_vec_at(GameStartingParams_table_t, vec, i, 0)
+__flatbuffers_table_as_root(GameStartingParams)
+
+__flatbuffers_define_scalar_field(0, GameStartingParams, my_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
+__flatbuffers_define_scalar_field(1, GameStartingParams, random_seed, flatbuffers_uint64, uint64_t, UINT64_C(0))
+__flatbuffers_define_scalar_field(2, GameStartingParams, memory_capacity, flatbuffers_uint64, uint64_t, UINT64_C(0))
+__flatbuffers_define_union_field(flatbuffers_, 4, GameStartingParams, arena_bounds, ArenaBounds, 0)
+
 struct GameStateDelta_table { uint8_t unused__; };
 
 static inline size_t GameStateDelta_vec_len(GameStateDelta_vec_t vec)
@@ -600,8 +696,16 @@ __flatbuffers_define_vector_field(4, GameStateDelta, dead_entities, flatbuffers_
 __flatbuffers_define_vector_field(5, GameStateDelta, new_projectiles, Projectile_vec_t, 0)
 __flatbuffers_define_vector_field(6, GameStateDelta, dead_projectiles, DeadProjectile_vec_t, 0)
 __flatbuffers_define_vector_field(7, GameStateDelta, explosions, Explosion_vec_t, 0)
-__flatbuffers_define_scalar_field(8, GameStateDelta, my_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
-__flatbuffers_define_scalar_field(9, GameStateDelta, winner_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
+
+struct EndGame_table { uint8_t unused__; };
+
+static inline size_t EndGame_vec_len(EndGame_vec_t vec)
+__flatbuffers_vec_len(vec)
+static inline EndGame_table_t EndGame_vec_at(EndGame_vec_t vec, size_t i)
+__flatbuffers_offset_vec_at(EndGame_table_t, vec, i, 0)
+__flatbuffers_table_as_root(EndGame)
+
+__flatbuffers_define_scalar_field(0, EndGame, winner_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
 
 struct Path_table { uint8_t unused__; };
 

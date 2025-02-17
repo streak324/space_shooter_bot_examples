@@ -22,6 +22,7 @@ typedef double f64;
 //any imported wasm host functions need the function declared with EM_IMPORT(func_name) appended to it. no need to define function since it is provided by the wasm game host
 void botsLog(void* buffer_ptr, i32 length) EM_IMPORT(botsLog);
 i32 botsGetGameState(void* buffer_ptr, i32 capacity) EM_IMPORT(botsGetGameState);
+i32 botsGetGameStartingParams(void* buffer_ptr, i32 capacity) EM_IMPORT(botsGetGameStartingParams);
 i32 botsMoveEntityToTarget(u64 entity_id, f32 x, f32 y) EM_IMPORT(botsMoveEntityToTarget);
 i32 botsAimTurret(u64 entity_id, i32 block_index, f32 x, f32 y) EM_IMPORT(botsAimTurret);
 i32 botsFireCannon(u64 entity_id, i32 block_index) EM_IMPORT(botsFireCannon);
@@ -55,24 +56,6 @@ static Buffer path_find_buffer = {
 	0,
 	PATH_FIND_BUFFER_CAPACITY
 };
-
-// string must be either null terminated or passed in a string length
-void write_string_to_buffer(Buffer* buffer, const i8* string_ptr, const i32 string_length)
-{
-	i32 i = 0;
-	for (i = 0; string_length == 0 || i < string_length; i++) {
-		if (buffer->offset >= buffer->capacity) {
-			return;
-		}
-
-		i8 b = string_ptr[i];	
-		if (b == 0) {
-			return;
-		};
-		buffer->ptr[buffer->offset] = b;
-		buffer->offset += 1;
-	}
-}
 
 static void reset_buffer(Buffer* buffer) {
 	buffer->offset = 0;
@@ -139,6 +122,10 @@ static Team my_team = {};
 static VecArray my_entity_path = {};
 static Vec enemy_position = {};
 
+static GameStartingParams_table_t start_params;
+
+static Buffer start_params_buffer = {};
+
 EMSCRIPTEN_KEEPALIVE void step()
 {
 	botsDrawText("im with stupid", strlen("im with stupid"), 100.0f, 100.0f, 20.0f, 0xFF00FF00);
@@ -152,6 +139,19 @@ EMSCRIPTEN_KEEPALIVE void step()
 		game_state_buffer.capacity = game_state_buffer_capacity;
 
 		initVecArray(&my_entity_path, 1024);
+
+		start_params_buffer.ptr = (i8*) malloc(1024);
+		start_params_buffer.capacity = 1024;
+		start_params_buffer.offset = 0;
+
+		start_params_buffer.offset = botsGetGameStartingParams(start_params_buffer.ptr, start_params_buffer.capacity);
+		if (start_params_buffer.offset > start_params_buffer.capacity) {
+			log_message(&print_buffer, "buffer too small for game starting params");
+		}
+
+		size_t size;
+		void * buffer_offset = flatbuffers_read_size_prefix((void*) start_params_buffer.ptr, &size);
+		start_params = GameStartingParams_as_root(buffer_offset);
 	}
 
 	i32 byte_size = botsGetGameState(game_state_buffer.ptr, game_state_buffer.capacity);
@@ -161,7 +161,7 @@ EMSCRIPTEN_KEEPALIVE void step()
 	void * buffer_offset = flatbuffers_read_size_prefix((void*) game_state_buffer.ptr, &size);
 	GameStateDelta_table_t game_state = GameStateDelta_as_root(buffer_offset);
 
-	u8 my_id = GameStateDelta_my_id_get(game_state);
+	u8 my_id = GameStartingParams_my_id_get(start_params);
 	my_team.team_id = my_id;
 
 	Flag_vec_t flags = GameStateDelta_flag_updates_get(game_state);
@@ -198,7 +198,7 @@ EMSCRIPTEN_KEEPALIVE void step()
 		Entity_vec_t new_entities = GameStateDelta_new_entities_get(game_state);
 		for (i = 0; i < Entity_vec_len(new_entities); i++) {
 			Entity_table_t entity = Entity_vec_at(new_entities, i);
-			u8 owner_id = Entity_owner_get(entity);
+			u8 owner_id = Entity_owner_id_get(entity);
 			u64 id = Entity_id_get(entity);
 			Block_vec_t blocks = Entity_blocks_get(entity);
 			size_t num_blocks = Block_vec_len(blocks);
@@ -212,6 +212,7 @@ EMSCRIPTEN_KEEPALIVE void step()
 				log_message(&print_buffer, "enemy_team.entity_id=%llu, num_blocks=%zu, owner_id=%u, my_id=%u", enemy_team.entity_id, num_blocks, owner_id, my_id);
 			}
 		}
+		log_message(&print_buffer, "my_id=%u, memory_capacity=%llu", my_id, GameStartingParams_memory_capacity_get(start_params));
 	}
 
 

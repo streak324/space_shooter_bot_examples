@@ -121,18 +121,22 @@ type NilU64 struct {
 }
 
 type Globals struct {
-	gameStateBuffer []byte
-	printBuffer     *PrintBuffer
-	stepCount       uint64
-	turretRotation  float32
-	myTeam          Team
-	enemyTeam       Team
-	gameStateDelta  *gamestate.GameStateDelta
-	targetEnemyId   NilU64
+	gameStartParamsBuffer []byte
+	gameStartParams       *gamestate.GameStartingParams
+	gameStateBuffer       []byte
+	printBuffer           *PrintBuffer
+	stepCount             uint64
+	turretRotation        float32
+	myTeam                Team
+	enemyTeam             Team
+	gameStateDelta        *gamestate.GameStateDelta
+	targetEnemyId         NilU64
 }
 
 var globals = Globals{
-	gameStateBuffer: make([]byte, 64*1024),
+	gameStartParamsBuffer: make([]byte, 1024),
+	gameStartParams:       &gamestate.GameStartingParams{},
+	gameStateBuffer:       make([]byte, 64*1024),
 	printBuffer: &PrintBuffer{
 		buffer: make([]byte, 0, 2048),
 	},
@@ -163,6 +167,22 @@ func step() {
 		globals.stepCount += 1
 	}()
 
+	if globals.stepCount == 0 {
+		ptr, len := bytesToPtr(globals.gameStartParamsBuffer)
+		neededBufferSize := getGameStartingParams(ptr, len)
+		if neededBufferSize > len {
+			log("error on getting game starting params. buffer too small")
+		} else {
+			n := flatbuffers.GetUOffsetT(globals.gameStartParamsBuffer[flatbuffers.SizeUint32:])
+			globals.gameStartParams.Init(globals.gameStartParamsBuffer, n+flatbuffers.SizeUint32)
+			globals.printBuffer.appendString("my_id=")
+			globals.printBuffer.appendInt(int64(globals.gameStartParams.MyId()))
+			globals.printBuffer.appendString(" memory_capacity=")
+			globals.printBuffer.appendInt(int64(globals.gameStartParams.MemoryCapacity()))
+			globals.printBuffer.sendAndReset()
+		}
+	}
+
 	if globals.stepCount%100 == 0 {
 		globals.printBuffer.appendString("step count: ")
 		globals.printBuffer.appendInt(int64(globals.stepCount))
@@ -184,7 +204,7 @@ func step() {
 	n := flatbuffers.GetUOffsetT(globals.gameStateBuffer[flatbuffers.SizeUint32:])
 	globals.gameStateDelta.Init(globals.gameStateBuffer, n+flatbuffers.SizeUint32)
 
-	myId := globals.gameStateDelta.MyId()
+	myId := globals.gameStartParams.MyId()
 
 	for idx := range globals.gameStateDelta.FlagUpdatesLength() {
 		var flag gamestate.Flag
@@ -204,7 +224,7 @@ func step() {
 			continue
 		}
 
-		isMine := entity.Owner() == myId
+		isMine := entity.OwnerId() == myId
 		id := entity.Id()
 		var position gamestate.Vec2
 		entity.Position(&position)

@@ -4,7 +4,32 @@ package gamestate
 
 import (
 	flatbuffers "github.com/google/flatbuffers/go"
+	"strconv"
 )
+
+type ArenaBounds byte
+
+const (
+	ArenaBoundsNONE                   ArenaBounds = 0
+	ArenaBoundsregular_convex_polygon ArenaBounds = 1
+)
+
+var EnumNamesArenaBounds = map[ArenaBounds]string{
+	ArenaBoundsNONE:                   "NONE",
+	ArenaBoundsregular_convex_polygon: "regular_convex_polygon",
+}
+
+var EnumValuesArenaBounds = map[string]ArenaBounds{
+	"NONE":                   ArenaBoundsNONE,
+	"regular_convex_polygon": ArenaBoundsregular_convex_polygon,
+}
+
+func (v ArenaBounds) String() string {
+	if s, ok := EnumNamesArenaBounds[v]; ok {
+		return s
+	}
+	return "ArenaBounds(" + strconv.FormatInt(int64(v), 10) + ")"
+}
 
 type Vec2 struct {
 	_tab flatbuffers.Struct
@@ -607,7 +632,7 @@ func (rcv *Entity) MutateId(n uint64) bool {
 	return rcv._tab.MutateUint64Slot(4, n)
 }
 
-func (rcv *Entity) Owner() byte {
+func (rcv *Entity) OwnerId() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
@@ -615,7 +640,7 @@ func (rcv *Entity) Owner() byte {
 	return 0
 }
 
-func (rcv *Entity) MutateOwner(n byte) bool {
+func (rcv *Entity) MutateOwnerId(n byte) bool {
 	return rcv._tab.MutateByteSlot(6, n)
 }
 
@@ -707,8 +732,8 @@ func EntityStart(builder *flatbuffers.Builder) {
 func EntityAddId(builder *flatbuffers.Builder, id uint64) {
 	builder.PrependUint64Slot(0, id, 0)
 }
-func EntityAddOwner(builder *flatbuffers.Builder, owner byte) {
-	builder.PrependByteSlot(1, owner, 0)
+func EntityAddOwnerId(builder *flatbuffers.Builder, ownerId byte) {
+	builder.PrependByteSlot(1, ownerId, 0)
 }
 func EntityAddIsCommandable(builder *flatbuffers.Builder, isCommandable bool) {
 	builder.PrependBoolSlot(2, isCommandable, false)
@@ -781,7 +806,7 @@ func (rcv *Projectile) MutateId(n uint64) bool {
 	return rcv._tab.MutateUint64Slot(4, n)
 }
 
-func (rcv *Projectile) Owner() byte {
+func (rcv *Projectile) OwnerId() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
@@ -789,7 +814,7 @@ func (rcv *Projectile) Owner() byte {
 	return 0
 }
 
-func (rcv *Projectile) MutateOwner(n byte) bool {
+func (rcv *Projectile) MutateOwnerId(n byte) bool {
 	return rcv._tab.MutateByteSlot(6, n)
 }
 
@@ -861,8 +886,8 @@ func ProjectileStart(builder *flatbuffers.Builder) {
 func ProjectileAddId(builder *flatbuffers.Builder, id uint64) {
 	builder.PrependUint64Slot(0, id, 0)
 }
-func ProjectileAddOwner(builder *flatbuffers.Builder, owner byte) {
-	builder.PrependByteSlot(1, owner, 0)
+func ProjectileAddOwnerId(builder *flatbuffers.Builder, ownerId byte) {
+	builder.PrependByteSlot(1, ownerId, 0)
 }
 func ProjectileAddPosition(builder *flatbuffers.Builder, position flatbuffers.UOffsetT) {
 	builder.PrependStructSlot(2, flatbuffers.UOffsetT(position), 0)
@@ -1664,6 +1689,190 @@ func SingleBlockEntityUpdateAddAppliedThrust(builder *flatbuffers.Builder, appli
 func SingleBlockEntityUpdateEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
+type RegularConvexPolygon struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsRegularConvexPolygon(buf []byte, offset flatbuffers.UOffsetT) *RegularConvexPolygon {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &RegularConvexPolygon{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func FinishRegularConvexPolygonBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
+func GetSizePrefixedRootAsRegularConvexPolygon(buf []byte, offset flatbuffers.UOffsetT) *RegularConvexPolygon {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &RegularConvexPolygon{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func FinishSizePrefixedRegularConvexPolygonBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
+}
+
+func (rcv *RegularConvexPolygon) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *RegularConvexPolygon) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *RegularConvexPolygon) Radius() float32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetFloat32(o + rcv._tab.Pos)
+	}
+	return 0.0
+}
+
+func (rcv *RegularConvexPolygon) MutateRadius(n float32) bool {
+	return rcv._tab.MutateFloat32Slot(4, n)
+}
+
+func (rcv *RegularConvexPolygon) NumSides() uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *RegularConvexPolygon) MutateNumSides(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(6, n)
+}
+
+func RegularConvexPolygonStart(builder *flatbuffers.Builder) {
+	builder.StartObject(2)
+}
+func RegularConvexPolygonAddRadius(builder *flatbuffers.Builder, radius float32) {
+	builder.PrependFloat32Slot(0, radius, 0.0)
+}
+func RegularConvexPolygonAddNumSides(builder *flatbuffers.Builder, numSides uint32) {
+	builder.PrependUint32Slot(1, numSides, 0)
+}
+func RegularConvexPolygonEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+type GameStartingParams struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsGameStartingParams(buf []byte, offset flatbuffers.UOffsetT) *GameStartingParams {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &GameStartingParams{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func FinishGameStartingParamsBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
+func GetSizePrefixedRootAsGameStartingParams(buf []byte, offset flatbuffers.UOffsetT) *GameStartingParams {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &GameStartingParams{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func FinishSizePrefixedGameStartingParamsBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
+}
+
+func (rcv *GameStartingParams) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *GameStartingParams) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *GameStartingParams) MyId() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *GameStartingParams) MutateMyId(n byte) bool {
+	return rcv._tab.MutateByteSlot(4, n)
+}
+
+func (rcv *GameStartingParams) RandomSeed() uint64 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.GetUint64(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *GameStartingParams) MutateRandomSeed(n uint64) bool {
+	return rcv._tab.MutateUint64Slot(6, n)
+}
+
+func (rcv *GameStartingParams) MemoryCapacity() uint64 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetUint64(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *GameStartingParams) MutateMemoryCapacity(n uint64) bool {
+	return rcv._tab.MutateUint64Slot(8, n)
+}
+
+func (rcv *GameStartingParams) ArenaBoundsType() ArenaBounds {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return ArenaBounds(rcv._tab.GetByte(o + rcv._tab.Pos))
+	}
+	return 0
+}
+
+func (rcv *GameStartingParams) MutateArenaBoundsType(n ArenaBounds) bool {
+	return rcv._tab.MutateByteSlot(10, byte(n))
+}
+
+func (rcv *GameStartingParams) ArenaBounds(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func GameStartingParamsStart(builder *flatbuffers.Builder) {
+	builder.StartObject(5)
+}
+func GameStartingParamsAddMyId(builder *flatbuffers.Builder, myId byte) {
+	builder.PrependByteSlot(0, myId, 0)
+}
+func GameStartingParamsAddRandomSeed(builder *flatbuffers.Builder, randomSeed uint64) {
+	builder.PrependUint64Slot(1, randomSeed, 0)
+}
+func GameStartingParamsAddMemoryCapacity(builder *flatbuffers.Builder, memoryCapacity uint64) {
+	builder.PrependUint64Slot(2, memoryCapacity, 0)
+}
+func GameStartingParamsAddArenaBoundsType(builder *flatbuffers.Builder, arenaBoundsType ArenaBounds) {
+	builder.PrependByteSlot(3, byte(arenaBoundsType), 0)
+}
+func GameStartingParamsAddArenaBounds(builder *flatbuffers.Builder, arenaBounds flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(arenaBounds), 0)
+}
+func GameStartingParamsEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
 type GameStateDelta struct {
 	_tab flatbuffers.Table
 }
@@ -1865,32 +2074,8 @@ func (rcv *GameStateDelta) ExplosionsLength() int {
 	return 0
 }
 
-func (rcv *GameStateDelta) MyId() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *GameStateDelta) MutateMyId(n byte) bool {
-	return rcv._tab.MutateByteSlot(20, n)
-}
-
-func (rcv *GameStateDelta) WinnerId() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *GameStateDelta) MutateWinnerId(n byte) bool {
-	return rcv._tab.MutateByteSlot(22, n)
-}
-
 func GameStateDeltaStart(builder *flatbuffers.Builder) {
-	builder.StartObject(10)
+	builder.StartObject(8)
 }
 func GameStateDeltaAddFlagUpdates(builder *flatbuffers.Builder, flagUpdates flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(flagUpdates), 0)
@@ -1940,12 +2125,128 @@ func GameStateDeltaAddExplosions(builder *flatbuffers.Builder, explosions flatbu
 func GameStateDeltaStartExplosionsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func GameStateDeltaAddMyId(builder *flatbuffers.Builder, myId byte) {
-	builder.PrependByteSlot(8, myId, 0)
-}
-func GameStateDeltaAddWinnerId(builder *flatbuffers.Builder, winnerId byte) {
-	builder.PrependByteSlot(9, winnerId, 0)
-}
 func GameStateDeltaEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+type EndGame struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsEndGame(buf []byte, offset flatbuffers.UOffsetT) *EndGame {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &EndGame{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func FinishEndGameBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
+func GetSizePrefixedRootAsEndGame(buf []byte, offset flatbuffers.UOffsetT) *EndGame {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &EndGame{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func FinishSizePrefixedEndGameBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
+}
+
+func (rcv *EndGame) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *EndGame) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *EndGame) WinnerId() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *EndGame) MutateWinnerId(n byte) bool {
+	return rcv._tab.MutateByteSlot(4, n)
+}
+
+func EndGameStart(builder *flatbuffers.Builder) {
+	builder.StartObject(1)
+}
+func EndGameAddWinnerId(builder *flatbuffers.Builder, winnerId byte) {
+	builder.PrependByteSlot(0, winnerId, 0)
+}
+func EndGameEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+type Path struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsPath(buf []byte, offset flatbuffers.UOffsetT) *Path {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &Path{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func FinishPathBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
+func GetSizePrefixedRootAsPath(buf []byte, offset flatbuffers.UOffsetT) *Path {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Path{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func FinishSizePrefixedPathBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
+}
+
+func (rcv *Path) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *Path) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *Path) Waypoints(obj *Vec2, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 8
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *Path) WaypointsLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func PathStart(builder *flatbuffers.Builder) {
+	builder.StartObject(1)
+}
+func PathAddWaypoints(builder *flatbuffers.Builder, waypoints flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(waypoints), 0)
+}
+func PathStartWaypointsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(8, numElems, 4)
+}
+func PathEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
