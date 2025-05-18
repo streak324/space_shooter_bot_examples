@@ -5,9 +5,6 @@ call emcc main.c -DFLATCC_ASSERT=my_assert -I./ -o bot.wasm ^
     -s WASM=1 -s INITIAL_HEAP=256kb -s STACK_SIZE=64kb -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=0 ^
     -Wl,--stack-first -Wl,--no-demangle -Wl,--no-entry -Wl,--import-memory
 
-wasm2wat bot.wasm > bot.wat
-wasm-objdump bot.wasm -d > bot.objdump
-
 rem Create destination directory if it doesn't exist
 set DEST_DIR=%USERPROFILE%\AppData\Local\space_shooter_bots\scripts
 if not exist "%DEST_DIR%" (

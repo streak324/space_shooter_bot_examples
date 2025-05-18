@@ -126,6 +126,9 @@ static GameStartingParams_table_t start_params;
 
 static Buffer start_params_buffer = {};
 
+static u64 my_team_entity_ids[5];
+static int num_my_team_entity_ids;
+
 EMSCRIPTEN_KEEPALIVE void step()
 {
 	botsDrawText("im with stupid", strlen("im with stupid"), 100.0f, 100.0f, 20.0f, 0xFF00FF00);
@@ -203,6 +206,7 @@ EMSCRIPTEN_KEEPALIVE void step()
 			Block_vec_t blocks = Entity_blocks_get(entity);
 			size_t num_blocks = Block_vec_len(blocks);
 			if (owner_id == my_id) {
+                my_team_entity_ids[num_my_team_entity_ids++] = id;
 				my_team.entity_id = id;
 				my_team.num_blocks_in_entity = num_blocks;
 				log_message(&print_buffer, "my_team.entity_id=%llu, num_blocks=%zu, owner_id=%u, my_id=%u", my_team.entity_id, num_blocks, owner_id, my_id);
@@ -224,8 +228,17 @@ EMSCRIPTEN_KEEPALIVE void step()
 		Vec2_struct_t position = EntityUpdate_position_get(entity);
 		u64 entity_id = EntityUpdate_id_get(entity);
 
+        u8 on_my_team = 0;
+        i32 j;
+        for (j = 0; j < num_my_team_entity_ids; j++) {
+            if (entity_id == my_team_entity_ids[j]) {
+                on_my_team = 1;
+                break;
+            }
+        }
+
 		//log_message(&print_buffer, "entity update: entity_id=%llu, my_team.entity_id=%llu, enemy_team.entity_id=%llu", entity_id, my_team.entity_id, enemy_team.entity_id);
-		if (entity_id == my_team.entity_id) {
+		if (on_my_team) {
 			u32 path_byte_size = 0;
 			if (enemy_team.is_flag_taken) {
 				path_byte_size = botsFindPath(
