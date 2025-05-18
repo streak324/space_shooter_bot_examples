@@ -1,6 +1,6 @@
 @echo off
 rem FLATCC_NO_ASSERT=1 or FLATCC_ASSERT=my_assert is required to avoid WASI imports
-emcc main.c -DFLATCC_ASSERT=my_assert -I./ -o bot.wasm ^
+call emcc main.c -DFLATCC_ASSERT=my_assert -I./ -o bot.wasm ^
     -gsource-map ^
     -s WASM=1 -s INITIAL_HEAP=256kb -s STACK_SIZE=64kb -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=0 ^
     -Wl,--stack-first -Wl,--no-demangle -Wl,--no-entry -Wl,--import-memory
