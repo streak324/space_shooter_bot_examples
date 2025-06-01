@@ -12,4 +12,4 @@ if not exist "%DEST_DIR%" (
 )
 
 rem Copy bot.wasm to the destination
-copy /Y bot.wasm "%DEST_DIR%"
+copy /Y bot.wasm "%DEST_DIR%\c-bot.wasm"
