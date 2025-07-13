@@ -25,32 +25,30 @@ func getGameStartingParams(ptr uint32, capacity uint32) uint32
 
 // command entity with id `entityId` to move to position `x`, `y`
 //
-// returns counter that can be used in the next tick on whether the action was taken or not.
-//
 //go:wasmimport env botsMoveEntityToTarget
-func moveEntityToTarget(entityId uint64, x float32, y float32) int32
+func moveEntityToTarget(entityId uint64, x float32, y float32)
 
 // command entity with id `entityId` to rotate its block at index `blockIndex` at `rotation` radians.
 //
 // rotation is relative to ship, not relative to world.
 //
 //go:wasmimport env botsOrientTurret
-func orientTurret(entityId uint64, blockIndex uint32, rotation float32) int32
+func orientTurret(entityId uint64, blockIndex uint32, rotation float32)
 
 // command entity with id `entityId` to fire cannon on block index `blockIndex`
 //
 //go:wasmimport env botsFireCannon
-func fireCannon(entityId uint64, blockIndex uint32) int32
+func fireCannon(entityId uint64, blockIndex uint32)
 
 // command entity with id `entityId` to launch missiles on block index `blockIndex`
 //
 //go:wasmimport env botsLaunchMissiles
-func launchMissiles(entityId uint64, blockIndex uint32) int32
+func launchMissiles(entityId uint64, blockIndex uint32)
 
 // command entity with id `entityId` to aim turret on block index `blockIndex` at position x and y
 //
 //go:wasmimport env botsAimTurret
-func aimTurret(entityId uint64, blockIndex uint32, x float32, y float32) int32
+func aimTurret(entityId uint64, blockIndex uint32, x float32, y float32)
 
 //go:wasmimport env botsGrabFlag
-func grabFlag(entityId uint64) int32
+func grabFlag(entityId uint64)

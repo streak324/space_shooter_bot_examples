@@ -23,15 +23,16 @@ typedef double f64;
 void botsLog(void* buffer_ptr, i32 length) EM_IMPORT(botsLog);
 i32 botsGetGameState(void* buffer_ptr, i32 capacity) EM_IMPORT(botsGetGameState);
 i32 botsGetGameStartingParams(void* buffer_ptr, i32 capacity) EM_IMPORT(botsGetGameStartingParams);
-i32 botsMoveEntityToTarget(u64 entity_id, f32 x, f32 y) EM_IMPORT(botsMoveEntityToTarget);
-i32 botsAimTurret(u64 entity_id, i32 block_index, f32 x, f32 y) EM_IMPORT(botsAimTurret);
-i32 botsFireCannon(u64 entity_id, i32 block_index) EM_IMPORT(botsFireCannon);
+void botsMoveEntityToTarget(u64 entity_id, f32 x, f32 y) EM_IMPORT(botsMoveEntityToTarget);
+void botsAimTurret(u64 entity_id, i32 block_index, f32 x, f32 y) EM_IMPORT(botsAimTurret);
+void botsFireCannon(u64 entity_id, i32 block_index) EM_IMPORT(botsFireCannon);
 u32 botsFindPath(f32 start_x, f32 start_y, f32 goal_x, f32 goal_y, void *buffer_ptr, u32 capacity) EM_IMPORT(botsFindPath);
-i32 botsGrabFlag(u64 entityId) EM_IMPORT(botsGrabFlag);
+void botsGrabFlag(u64 entityId) EM_IMPORT(botsGrabFlag);
 void botsDrawText(void* buffer_ptr, u32 length, f32 x, f32 y, f32 size, u32 color) EM_IMPORT(botsDrawText);
 void botsDrawLine(f32 x1, f32 y1, f32 x2, f32 y2, f32 width, u32 color) EM_IMPORT(botsDrawLine);
 void botsDrawRectangle(f32 x, f32 y, f32 width, f32 height, u32 color) EM_IMPORT(botsDrawRectangle);
 void botsDrawCircle(f32 x, f32 y, f32 radius, u32 color) EM_IMPORT(botsDrawCircle);
+void botsDrawPolyline(void* points_ptr, u32 num_points, f32 thickness, u32 color) EM_IMPORT(botsDrawPolyline);
 
 typedef struct {
 	i8* ptr;
@@ -253,11 +254,11 @@ EMSCRIPTEN_KEEPALIVE void step()
 
 			if (path_byte_size > 0) {
 				void * buffer_offset = flatbuffers_read_size_prefix((void*) path_find_buffer.ptr, &size);
-				Path_table_t path = Path_as_root(buffer_offset);
-				Vec2_vec_t path_points = Path_waypoints_get(path);
+				Points_table_t path = Points_as_root(buffer_offset);
+				Vec2_vec_t path_points = Points_points_get(path);
 				size_t num_points = Vec2_vec_len(path_points);
 
-				log_message(&print_buffer, "path_byte_size=%d, waypoints=%zu", path_byte_size, num_points);
+				log_message(&print_buffer, "path_byte_size=%d, points=%zu", path_byte_size, num_points);
 
 				size_t j = 0;
 				for (j = num_points-1; j >= 0; j--) {
@@ -294,6 +295,16 @@ EMSCRIPTEN_KEEPALIVE void step()
 		print_buffer.offset += bytes_written;
 		botsLog(print_buffer.ptr, print_buffer.offset);
 	}
+
+	f32 polyline_points[12] = {
+		-100.0f, -050.0f,
+		-060.0f, -080.0f,
+		-60.0f, -130.0f,
+		-140.0f, -130.0f,
+		-140.0f, -080.0f ,
+		-100.0f, -050.0f
+	};
+	botsDrawPolyline((void*)polyline_points, 6, 2.0f, 0xFF00FFFF); 
 
 	step_count += 1;
 }

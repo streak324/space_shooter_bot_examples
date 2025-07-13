@@ -105,10 +105,10 @@ typedef const struct EndGame_table *EndGame_table_t;
 typedef struct EndGame_table *EndGame_mutable_table_t;
 typedef const flatbuffers_uoffset_t *EndGame_vec_t;
 typedef flatbuffers_uoffset_t *EndGame_mutable_vec_t;
-typedef const struct Path_table *Path_table_t;
-typedef struct Path_table *Path_mutable_table_t;
-typedef const flatbuffers_uoffset_t *Path_vec_t;
-typedef flatbuffers_uoffset_t *Path_mutable_vec_t;
+typedef const struct Points_table *Points_table_t;
+typedef struct Points_table *Points_mutable_table_t;
+typedef const flatbuffers_uoffset_t *Points_vec_t;
+typedef flatbuffers_uoffset_t *Points_mutable_vec_t;
 #ifndef Vec2_file_identifier
 #define Vec2_file_identifier 0
 #endif
@@ -349,17 +349,17 @@ typedef flatbuffers_uoffset_t *Path_mutable_vec_t;
 #ifndef EndGame_file_extension
 #define EndGame_file_extension "bin"
 #endif
-#ifndef Path_file_identifier
-#define Path_file_identifier 0
+#ifndef Points_file_identifier
+#define Points_file_identifier 0
 #endif
-/* deprecated, use Path_file_identifier */
-#ifndef Path_identifier
-#define Path_identifier 0
+/* deprecated, use Points_file_identifier */
+#ifndef Points_identifier
+#define Points_identifier 0
 #endif
-#define Path_type_hash ((flatbuffers_thash_t)0xeb66e456)
-#define Path_type_identifier "\x56\xe4\x66\xeb"
-#ifndef Path_file_extension
-#define Path_file_extension "bin"
+#define Points_type_hash ((flatbuffers_thash_t)0xa9f0a4e6)
+#define Points_type_identifier "\xe6\xa4\xf0\xa9"
+#ifndef Points_file_extension
+#define Points_file_extension "bin"
 #endif
 
 
@@ -679,6 +679,7 @@ __flatbuffers_define_scalar_field(0, GameStartingParams, my_id, flatbuffers_uint
 __flatbuffers_define_scalar_field(1, GameStartingParams, random_seed, flatbuffers_uint64, uint64_t, UINT64_C(0))
 __flatbuffers_define_scalar_field(2, GameStartingParams, memory_capacity, flatbuffers_uint64, uint64_t, UINT64_C(0))
 __flatbuffers_define_union_field(flatbuffers_, 4, GameStartingParams, arena_bounds, ArenaBounds, 0)
+__flatbuffers_define_scalar_field(5, GameStartingParams, fuel_per_step, flatbuffers_uint64, uint64_t, UINT64_C(0))
 
 struct GameStateDelta_table { uint8_t unused__; };
 
@@ -707,15 +708,15 @@ __flatbuffers_table_as_root(EndGame)
 
 __flatbuffers_define_scalar_field(0, EndGame, winner_id, flatbuffers_uint8, uint8_t, UINT8_C(0))
 
-struct Path_table { uint8_t unused__; };
+struct Points_table { uint8_t unused__; };
 
-static inline size_t Path_vec_len(Path_vec_t vec)
+static inline size_t Points_vec_len(Points_vec_t vec)
 __flatbuffers_vec_len(vec)
-static inline Path_table_t Path_vec_at(Path_vec_t vec, size_t i)
-__flatbuffers_offset_vec_at(Path_table_t, vec, i, 0)
-__flatbuffers_table_as_root(Path)
+static inline Points_table_t Points_vec_at(Points_vec_t vec, size_t i)
+__flatbuffers_offset_vec_at(Points_table_t, vec, i, 0)
+__flatbuffers_table_as_root(Points)
 
-__flatbuffers_define_vector_field(0, Path, waypoints, Vec2_vec_t, 0)
+__flatbuffers_define_vector_field(0, Points, points, Vec2_vec_t, 0)
 
 
 #include "flatcc/flatcc_epilogue.h"
