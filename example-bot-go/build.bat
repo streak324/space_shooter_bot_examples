@@ -8,7 +8,7 @@ set "OUTPUT_NAME=bot"
 tinygo build -o %OUTPUT_NAME%.wasm --opt 1 -target wasm-unknown .
 
 rem Create destination directory if it doesn't exist
-set DEST_DIR=%USERPROFILE%\AppData\Local\space_shooter_bots\scripts
+set DEST_DIR=%USERPROFILE%\AppData\Local\spacebots.org\scripts
 if not exist "%DEST_DIR%" (
     mkdir "%DEST_DIR%"
 )
